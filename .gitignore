@@ -1,6 +1,47 @@
-*.class
+#Android generated
+bin
+gen
+lint.xml
 
-# Package Files #
-*.jar
-*.war
-*.ear
+# Android NDK
+*.o
+*.o.d
+*_g
+*.a
+*.so
+*.pinfo
+*.gcno
+*.bar
+gdbserver
+gdb.setup
+
+#Eclipse
+.project
+.classpath
+.settings
+.checkstyle
+
+#IntelliJ IDEA
+.idea
+*.iml
+*.ipr
+*.iws
+classes
+gen-external-apklibs
+
+#Maven
+target
+release.properties
+pom.xml.*
+
+#Ant
+build.xml
+ant.properties
+local.properties
+proguard.cfg
+proguard-project.txt
+
+#Other
+.DS_Store
+tmp
+out
