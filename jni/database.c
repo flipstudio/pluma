@@ -25,6 +25,7 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_open
 				(*jenv)->SetObjectArrayElement(jenv, joutError, 0, error);
 			}
 		}
+
 		if (db)
 		{
 			sqlite3_close_v2(db);
@@ -100,14 +101,6 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_close
 	sqlite3 *db = *(sqlite3**) &jdb;
 
 	return sqlite3_close_v2(db);
-}
-
-JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_lastErrorCode
-(JNIEnv *jenv, jobject thiz, jlong jdb)
-{
-	sqlite3 *db = *(sqlite3**) &jdb;
-
-	return sqlite3_errcode(db);
 }
 
 JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_lastInsertId

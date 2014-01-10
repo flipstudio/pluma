@@ -1,9 +1,5 @@
 #include "statement.h"
-#include <stdlib.h>
 #include <sqlite3.h>
-#include <android/log.h>
-
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "sqlite", __VA_ARGS__))
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bind__JII
 (JNIEnv *jenv, jobject thiz, jlong jstmt, jint index, jint value)
@@ -80,7 +76,23 @@ JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Statement_getText
 {
 	sqlite3_stmt *stmt = *(sqlite3_stmt**) &jstmt;
 
-	return (*jenv)->NewStringUTF(jenv, sqlite3_column_text(stmt, jcolumnIndex));
+	return (*jenv)->NewStringUTF(jenv, (const char *) sqlite3_column_text(stmt, jcolumnIndex));
+}
+
+JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_getColumnType
+(JNIEnv *jenv, jobject thiz, jlong jstmt, jint jcolumnIndex)
+{
+	sqlite3_stmt *stmt = *(sqlite3_stmt**) &jstmt;
+
+	return sqlite3_column_type(stmt, jcolumnIndex);
+}
+
+JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Statement_getColumnName
+(JNIEnv *jenv, jobject thiz, jlong jstmt, jint jcolumnIndex)
+{
+	sqlite3_stmt *stmt = *(sqlite3_stmt**) &jstmt;
+
+	return (*jenv)->NewStringUTF(jenv, sqlite3_column_name(stmt, jcolumnIndex));
 }
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bindParameterCount
@@ -103,6 +115,14 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bindParameterIndex
 	(*jenv)->ReleaseStringUTFChars(jenv, jparameterName, parameterName);
 
 	return rc;
+}
+
+JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_getColumnCount
+(JNIEnv *jenv, jobject thiz, jlong jstmt)
+{
+	sqlite3_stmt *stmt = *(sqlite3_stmt**) &jstmt;
+
+	return sqlite3_column_count(stmt);
 }
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_step

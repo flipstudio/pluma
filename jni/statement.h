@@ -35,11 +35,20 @@ JNIEXPORT jdouble JNICALL Java_com_flipstudio_pluma_Statement_getDouble
 JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Statement_getText
 (JNIEnv *, jobject, jlong, jint);
 
+JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_getColumnType
+(JNIEnv *, jobject, jlong, jint);
+
+JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Statement_getColumnName
+(JNIEnv *, jobject, jlong, jint);
+
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bindParameterCount
 (JNIEnv *, jobject, jlong);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bindParameterIndex
 (JNIEnv *, jobject, jlong, jstring);
+
+JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_getColumnCount
+(JNIEnv *, jobject, jlong);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_step
 (JNIEnv *, jobject, jlong);

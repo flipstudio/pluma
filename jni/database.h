@@ -20,9 +20,6 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_exec
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_close
 (JNIEnv *, jobject, jlong);
 
-JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_lastErrorCode
-(JNIEnv *, jobject, jlong);
-
 JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_lastInsertId
 (JNIEnv *, jobject, jlong);
 

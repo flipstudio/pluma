@@ -1,14 +1,13 @@
 package com.flipstudio.pluma;
 
-import static com.flipstudio.pluma.Constants.SQLITE_ERROR;
-import static com.flipstudio.pluma.Constants.SQLITE_MISUSE;
-import static com.flipstudio.pluma.Constants.SQLITE_OK;
-import static com.flipstudio.pluma.Constants.SQLITE_ROW;
+import static com.flipstudio.pluma.Pluma.SQLITE_DONE;
+import static com.flipstudio.pluma.Pluma.SQLITE_OK;
+import static com.flipstudio.pluma.Pluma.SQLITE_ROW;
 
 /**
  * Created by Pietro Caselani
  * On 14/11/13
- * SQLite
+ * Pluma
  */
 public final class ResultSet {
   //region Fields
@@ -21,47 +20,44 @@ public final class ResultSet {
     mDatabase = database;
     mStatement = statement;
   }
-
-  private ResultSet() {
-    throw new RuntimeException(String.format("Use %s(%s) constructor",
-        ResultSet.class.getName(), Statement.class.getName()));
-  }
   //endregion
 
-  ////region Public methods
-  public boolean next() {
+  //region Public methods
+  public boolean next() throws SQLiteException {
     int rc = mStatement.step();
 
-    if (rc != SQLITE_ROW) {
-      close();
+    if (rc != SQLITE_ROW && close()) {
 
-      if (rc == SQLITE_ERROR || rc == SQLITE_MISUSE) {
-        throw new RuntimeException(String.format("Error: %s - Code: %d",
-            mDatabase.getLastErrorMessage(), mDatabase.getLastErrorCode()));
+      if (rc != SQLITE_DONE) {
+        throw new SQLiteException(rc, mDatabase.getLastErrorMessage());
       }
     }
 
-    return rc == SQLITE_ROW;
+    return true;
   }
 
-  public boolean close() {
-    return mStatement.close() == SQLITE_OK;
+  public boolean close() throws SQLiteException {
+    int rc = mStatement.close();
+    if (rc != SQLITE_OK) {
+      throw new SQLiteException(rc, mDatabase.getLastErrorMessage());
+    }
+    return true;
   }
 
-  public double getDouble(int columnIndex) {
+  public double getDouble(int columnIndex) throws SQLiteException {
     return mStatement.getDouble(columnIndex);
   }
 
-  public int getInt(int columnIndex) {
+  public int getInt(int columnIndex) throws SQLiteException {
     return mStatement.getInt(columnIndex);
   }
 
-  public long getLong(int columnIndex) {
+  public long getLong(int columnIndex) throws SQLiteException {
     return mStatement.getLong(columnIndex);
   }
 
-  public String getText(int columnIndex) {
-    return mStatement.getText(columnIndex);
+  public String getString(int columnIndex) throws SQLiteException {
+    return mStatement.getString(columnIndex);
   }
   //endregion
 }
