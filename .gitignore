@@ -14,12 +14,20 @@ lint.xml
 *.bar
 gdbserver
 gdb.setup
+libs
 
 #Eclipse
 .project
 .classpath
 .settings
 .checkstyle
+
+# gradle directory
+.gradle
+gradlew
+gradlew.bat
+gradle/
+build/
 
 #IntelliJ IDEA
 .idea
@@ -45,3 +53,6 @@ proguard-project.txt
 .DS_Store
 tmp
 out
+
+#Pluma
+TestDB.sqlite

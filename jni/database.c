@@ -48,7 +48,7 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_prepare
 (JNIEnv *jenv, jobject thiz, jlong jdb, jstring jsql, jlongArray jresult)
 {
 	sqlite3 *db;
-	const char *sql, *zLeftover;
+	const char *sql;
 	sqlite3_stmt *stmt;
 	int rc;
 	jlong result;
@@ -56,13 +56,7 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_prepare
 	db = *(sqlite3**) &jdb;
 	sql = (*jenv)->GetStringUTFChars(jenv, jsql, 0);
 
-	rc = sqlite3_prepare_v2(db, sql, -1, &stmt, &zLeftover);
-
-	if (!stmt)
-	{
-		sql = zLeftover;
-		rc = sqlite3_prepare_v2(db, sql, -1, &stmt, &zLeftover);
-	}
+	rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
 
 	if (stmt)
 	{

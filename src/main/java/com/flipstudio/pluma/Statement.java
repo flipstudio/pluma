@@ -2,8 +2,6 @@ package com.flipstudio.pluma;
 
 import java.util.HashMap;
 
-import static com.flipstudio.pluma.Pluma.SQLITE_ERROR;
-import static com.flipstudio.pluma.Pluma.SQLITE_MISUSE;
 import static com.flipstudio.pluma.Pluma.SQLITE_NULL;
 
 /**
@@ -75,61 +73,40 @@ final class Statement {
   //endregion
 
   //region Columns
-  public int getInt(int columnIndex) throws SQLiteException {
-    if (columnIndex >= mColumnCount || columnIndex < 0) {
-      throw new SQLiteException(SQLITE_ERROR, "Column index " + columnIndex + " out of range.");
-    }
+  public int getInt(int columnIndex) {
     return getInt(mStmt, columnIndex);
   }
 
-  public long getLong(int columnIndex) throws SQLiteException {
-    if (columnIndex >= mColumnCount || columnIndex < 0) {
-      throw new SQLiteException(SQLITE_ERROR, "Column index " + columnIndex + " out of range.");
-    }
+  public long getLong(int columnIndex) {
     return getLong(mStmt, columnIndex);
   }
 
-  public double getDouble(int columnIndex) throws SQLiteException {
-    if (columnIndex >= mColumnCount || columnIndex < 0) {
-      throw new SQLiteException(SQLITE_ERROR, "Column index " + columnIndex + " out of range.");
-    }
+  public double getDouble(int columnIndex) {
     return getDouble(mStmt, columnIndex);
   }
 
-  public String getString(int columnIndex) throws SQLiteException {
-    if (columnIndex >= mColumnCount || columnIndex < 0) {
-      throw new SQLiteException(SQLITE_ERROR, "Column index " + columnIndex + " out of range.");
-    }
+  public String getString(int columnIndex) {
     return getText(mStmt, columnIndex);
   }
 
-  public int getColumnType(int columnIndex) throws SQLiteException {
-    if (columnIndex >= mColumnCount || columnIndex < 0) {
-      throw new SQLiteException(SQLITE_ERROR, "Column index " + columnIndex + " out of range.");
-    }
+  public int getColumnType(int columnIndex) {
     return getColumnType(mStmt, columnIndex);
   }
 
-  public boolean isNull(int columnIndex) throws SQLiteException {
-    if (columnIndex >= mColumnCount || columnIndex < 0) {
-      throw new SQLiteException(SQLITE_ERROR, "Column index " + columnIndex + " out of range.");
-    }
+  public boolean isNull(int columnIndex) {
     return getColumnType(mStmt, columnIndex) == SQLITE_NULL;
   }
 
-  public String getColumnName(int columnIndex) throws SQLiteException {
-    if (columnIndex >= mColumnCount || columnIndex < 0) {
-      throw new SQLiteException(SQLITE_ERROR, "Column index " + columnIndex + " out of range.");
-    }
+  public String getColumnName(int columnIndex) {
     return getColumnName(mStmt, columnIndex);
   }
 
-  public int getColumnIndex(String columnName) throws SQLiteException {
+  public int getColumnIndex(String columnName) {
     if (mColumnNameIndexes.containsKey(columnName)) {
       return mColumnNameIndexes.get(columnName);
     }
 
-    throw new SQLiteException(SQLITE_MISUSE, "Invalid column name " + columnName);
+    return -1;
   }
 
   public int getColumnCount() {
@@ -145,12 +122,8 @@ final class Statement {
     return bindParameterCount(mStmt);
   }
 
-  public int getParameterIndex(String parameterName) throws SQLiteException {
-    int index = bindParameterIndex(mStmt, parameterName);
-    if (index <= 0 || index > mColumnCount) {
-      throw new SQLiteException(SQLITE_MISUSE, "Invalid parameter name " + parameterName);
-    }
-    return index;
+  public int getParameterIndex(String parameterName) {
+    return bindParameterIndex(mStmt, parameterName);
   }
 
   public int close() throws SQLiteException {
