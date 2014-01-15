@@ -52,6 +52,22 @@ public final class ResultSet {
     return mStatement.getColumnCount();
   }
 
+  public int getColumnIndex(String columnName) {
+    return mStatement.getColumnIndex(columnName);
+  }
+
+  public String getColumnName(int columnIndex) {
+    return mStatement.getColumnName(columnIndex);
+  }
+
+  public int getColumnType(int columnIndex) {
+    return mStatement.getColumnType(columnIndex);
+  }
+
+  public boolean isNull(int columnIndex) {
+    return mStatement.isNull(columnIndex);
+  }
+
   public double getDouble(int columnIndex) {
     return mStatement.getDouble(columnIndex);
   }

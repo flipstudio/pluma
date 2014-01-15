@@ -65,7 +65,7 @@ public final class Database {
   //endregion
 
   //region Public
-  public void exec(String sql) throws SQLiteException {
+  public void execute(String sql) throws SQLiteException {
     String[] errors = new String[1];
 
     int rc = exec(mDB, sql, errors);
@@ -74,7 +74,7 @@ public final class Database {
       throw new SQLiteException(rc, errors[0]);
     }
 
-    notifyListener(sql);
+    notifyListenerOnExecuteQuery(sql);
   }
 
   public boolean executeUpdate(String sql) throws SQLiteException {
@@ -140,18 +140,18 @@ public final class Database {
 
   //region Private
   private boolean executeUpdate(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-    notifyListener(sql);
+    notifyListenerOnExecuteQuery(sql);
 
     return compileStatement(sql, listArgs, mapArgs).step() == SQLITE_DONE;
   }
 
   private ResultSet executeQuery(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-    notifyListener(sql);
+    notifyListenerOnExecuteQuery(sql);
 
     return new ResultSet(this, compileStatement(sql, listArgs, mapArgs));
   }
 
-  private void notifyListener(String sql) {
+  private void notifyListenerOnExecuteQuery(String sql) {
     if (mDatabaseListener != null) {
       mDatabaseListener.onExecuteQuery(sql);
     }

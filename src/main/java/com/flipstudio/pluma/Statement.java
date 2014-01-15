@@ -1,6 +1,6 @@
 package com.flipstudio.pluma;
 
-import java.util.HashMap;
+import java.util.TreeMap;
 
 import static com.flipstudio.pluma.Pluma.SQLITE_NULL;
 
@@ -13,7 +13,7 @@ final class Statement {
   //region Fields
   private final long mStmt;
   private final int mColumnCount;
-  private final HashMap<String, Integer> mColumnNameIndexes;
+  private final TreeMap<String, Integer> mColumnNameIndexes;
   //endregion
 
   //region Constructors
@@ -21,7 +21,7 @@ final class Statement {
     mStmt = stmt;
     mColumnCount = getColumnCount(stmt);
 
-    mColumnNameIndexes = new HashMap<String, Integer>(mColumnCount);
+    mColumnNameIndexes = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
 
     for (int i = 0; i < mColumnCount; i++) {
       mColumnNameIndexes.put(getColumnName(mStmt, i), i);

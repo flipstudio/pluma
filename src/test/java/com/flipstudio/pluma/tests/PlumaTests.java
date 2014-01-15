@@ -1,6 +1,7 @@
-package com.flipstudio.pluma;
+package com.flipstudio.pluma.tests;
 
-import com.flipstudio.pluma.models.Person;
+import com.flipstudio.pluma.Database;
+import com.flipstudio.pluma.ResultSet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,10 +39,11 @@ public class PlumaTests {
 
     assertTrue("Can not open database.", mDatabase.isOpen() && DATABASE_FILE.exists());
 
-    mDatabase.exec("CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, lastName text, birth datetime);\n"
-        + "INSERT INTO people (name,lastName,birth) VALUES ('Jeremy','Xyla','1179129666000');\n"
-        + "INSERT INTO people (name,lastName,birth) VALUES ('Damon','Althea','1029576914000');\n"
-        + "INSERT INTO people (name,lastName,birth) VALUES ('Reese','Kalia','763347737000');");
+    mDatabase.execute(
+        "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, lastName text, birth datetime);\n"
+            + "INSERT INTO people (name,lastName,birth) VALUES ('Jeremy','Xyla','1179129666000');\n"
+            + "INSERT INTO people (name,lastName,birth) VALUES ('Damon','Althea','1029576914000');\n"
+            + "INSERT INTO people (name,lastName,birth) VALUES ('Reese','Kalia','763347737000');");
 
     mDatabase.setDatabaseListener(new Database.DatabaseListener() {
       @Override public void onExecuteQuery(String query) {
@@ -89,21 +91,21 @@ public class PlumaTests {
 
     assertEquals("Unexpected column count.", 4, rs.getColumnCount());
 
-    ArrayList<Person> people = new ArrayList<Person>();
+    ArrayList<HashMap<String, Object>> people = new ArrayList<HashMap<String, Object>>();
     while (rs.next()) {
-      Person person = new Person();
-      person.setId(rs.getInt(0));
-      person.setName(rs.getString(1));
-      person.setLastName(rs.getString(2));
-      person.setBirth(rs.getDate(3));
+      HashMap<String, Object> person = new HashMap<String, Object>();
+      person.put("id", rs.getInt(0));
+      person.put("name", rs.getString(1));
+      person.put("lastName", rs.getString(2));
+      person.put("birth", rs.getDate(3));
       people.add(person);
     }
 
     assertEquals("Unexpected people count.", 3, people.size());
-    assertEquals("Unexpected person id.", 2, people.get(1).getId());
-    assertEquals("Unexpected person name.", "Jeremy", people.get(0).getName());
-    assertEquals("Unexpected person last name.", "Kalia", people.get(2).getLastName());
-    assertEquals("Unexpected person birth.", new Date(763347737000L), people.get(2).getBirth());
+    assertEquals("Unexpected person id.", 2, people.get(1).get("id"));
+    assertEquals("Unexpected person name.", "Jeremy", people.get(0).get("name"));
+    assertEquals("Unexpected person last name.", "Kalia", people.get(2).get("lastName"));
+    assertEquals("Unexpected person birth.", new Date(763347737000L), people.get(2).get("birth"));
 
     rs = mDatabase.executeQuery("SELECT id, name FROM people WHERE id = ?", 2);
     assertEquals("Unexpected column count.", 2, rs.getColumnCount());
@@ -143,7 +145,7 @@ public class PlumaTests {
 
   //region Exec
   @Test public void testExec() throws Exception {
-    mDatabase.exec("PRAGMA foreign_keys = ON");
+    mDatabase.execute("PRAGMA foreign_keys = ON");
 
     ResultSet rs = mDatabase.executeQuery("PRAGMA foreign_keys");
     if (rs.next()) {
@@ -152,7 +154,7 @@ public class PlumaTests {
 
     assertTrue("Can not close result set.", rs.close());
 
-    mDatabase.exec("PRAGMA foreign_keys = OFF");
+    mDatabase.execute("PRAGMA foreign_keys = OFF");
 
     rs = mDatabase.executeQuery("PRAGMA foreign_keys");
     if (rs.next()) {
