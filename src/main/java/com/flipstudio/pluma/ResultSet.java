@@ -1,5 +1,9 @@
 package com.flipstudio.pluma;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Date;
+
 import static com.flipstudio.pluma.Pluma.SQLITE_DONE;
 import static com.flipstudio.pluma.Pluma.SQLITE_OK;
 import static com.flipstudio.pluma.Pluma.SQLITE_ROW;
@@ -24,16 +28,16 @@ public final class ResultSet {
 
   //region Public methods
   public boolean next() throws SQLiteException {
+    boolean returnValue;
     int rc = mStatement.step();
 
-    if (rc != SQLITE_ROW && close()) {
-
+    if (returnValue = rc != SQLITE_ROW && close()) {
       if (rc != SQLITE_DONE) {
         throw new SQLiteException(rc, mDatabase.getLastErrorMessage());
       }
     }
 
-    return true;
+    return !returnValue;
   }
 
   public boolean close() throws SQLiteException {
@@ -44,20 +48,36 @@ public final class ResultSet {
     return true;
   }
 
-  public double getDouble(int columnIndex) throws SQLiteException {
+  public int getColumnCount() {
+    return mStatement.getColumnCount();
+  }
+
+  public double getDouble(int columnIndex) {
     return mStatement.getDouble(columnIndex);
   }
 
-  public int getInt(int columnIndex) throws SQLiteException {
+  public int getInt(int columnIndex) {
     return mStatement.getInt(columnIndex);
   }
 
-  public long getLong(int columnIndex) throws SQLiteException {
+  public long getLong(int columnIndex) {
     return mStatement.getLong(columnIndex);
   }
 
-  public String getString(int columnIndex) throws SQLiteException {
+  public String getString(int columnIndex) {
     return mStatement.getString(columnIndex);
+  }
+
+  public Date getDate(int columnIndex) {
+    return new Date(getLong(columnIndex));
+  }
+
+  public BigDecimal getBigDecimal(int columnIndex) {
+    return new BigDecimal(getDouble(columnIndex));
+  }
+
+  public BigInteger getBigInteger(int columnIndex) {
+    return getBigDecimal(columnIndex).toBigInteger();
   }
   //endregion
 }

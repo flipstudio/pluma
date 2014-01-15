@@ -34,8 +34,7 @@ public final class Database {
   }
 
   public static Database open(String filePath, int flags) throws SQLiteException {
-    long[] dbArray = new long[1];
-    dbArray[0] = 0;
+    long[] dbArray = new long[] {0};
     String[] errors = new String[1];
 
     int rc = open(filePath, dbArray, flags, errors);
@@ -186,7 +185,7 @@ public final class Database {
           bindObject(mapArgs.get(key), parameterIndex, statement);
           index++;
         } else {
-          throw new SQLiteException(SQLITE_MISUSE, "Parameter index not found for name " + key);
+          throw new SQLiteException(SQLITE_MISUSE, "Parameter index not found for name " + key + "' in query:\n" + sql);
         }
       }
     } else if (listArgs != null && listArgs.size() > 0) {

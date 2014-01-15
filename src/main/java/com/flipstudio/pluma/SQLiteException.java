@@ -27,4 +27,10 @@ public final class SQLiteException extends Exception {
     return mErrorMessage;
   }
   //endregion
+
+  //region Object
+  @Override public String toString() {
+    return "SQLiteException\nError code: " + mErrorCode + "\nError Message: " + mErrorMessage;
+  }
+  //endregion
 }
