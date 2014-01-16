@@ -8,11 +8,11 @@
 extern "C" {
 #endif
 
-JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_open
-(JNIEnv *, jclass, jstring, jlongArray, jint, jobjectArray);
+JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_open
+(JNIEnv *, jclass, jstring, jint, jintArray, jobjectArray);
 
-JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_prepare
-(JNIEnv *, jobject, jlong, jstring, jlongArray);
+JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_prepare
+(JNIEnv *, jobject, jlong, jstring, jintArray);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_exec
 (JNIEnv *, jobject, jlong, jstring, jobjectArray);

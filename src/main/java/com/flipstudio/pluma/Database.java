@@ -34,15 +34,13 @@ public final class Database {
   }
 
   public static Database open(String filePath, int flags) throws SQLiteException {
-    long[] dbArray = new long[] {0};
+    int[] codes = new int[1];
     String[] errors = new String[1];
 
-    int rc = open(filePath, dbArray, flags, errors);
+    long db = open(filePath, flags, codes, errors);
 
-    long db = dbArray[0];
-
-    if (rc != SQLITE_OK || db == 0 || errors[0] != null) {
-      throw new SQLiteException(rc, errors[0]);
+    if (codes[0] != SQLITE_OK || db <= 0 || errors[0] != null) {
+      throw new SQLiteException(codes[0], errors[0]);
     }
 
     return new Database(db);
@@ -56,8 +54,8 @@ public final class Database {
   //endregion
 
   //region Native
-  private static native int open(String filePath, long[] ppDB, int flags, String[] ppOpenError);
-  private native int prepare(long db, String sql, long[] ppStmt);
+  public static native long open(String filePath, int flags, int[] ppOpenCode, String[] ppOpenError);
+  private native long prepare(long db, String sql, int[] ppPrepareCode);
   private native int exec(long db, String sql, String[] ppOutError);
   private native int close(long db);
   private native long lastInsertId(long db);
@@ -158,15 +156,13 @@ public final class Database {
   }
 
   private Statement compileStatement(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-    long[] stmtArray = new long[] {0};
+    int[] prepareCode = new int[1];
+    int rc;
 
-    int rc = prepare(mDB, sql, stmtArray);
+    long stmt = prepare(mDB, sql, prepareCode);
+    rc = prepareCode[0];
 
-    long stmt = stmtArray[0];
-
-    stmtArray[0] = 0;
-
-    if (rc != SQLITE_OK || stmt <= 0) {
+    if (rc != SQLITE_OK || stmt == 0) {
       throw new SQLiteException(rc, lastErrorMessage(mDB));
     }
 

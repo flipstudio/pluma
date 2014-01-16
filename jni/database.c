@@ -1,28 +1,36 @@
 #include "database.h"
 #include <sqlite3.h>
 
-JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_open
-(JNIEnv *jenv, jclass clazz, jstring jfilepath, jlongArray jresult, jint jflags, jobjectArray joutError)
+JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_open
+(JNIEnv *jenv, jclass clazz, jstring jfilepath, jint jflags, jintArray jCodeArray, jobjectArray jErrorArray)
 {
-	const char *dbfile, *errmsg;
-	sqlite3 *db = 0;
-	int rc;
+	const char *dbPath;
 	jlong result;
-	jstring error;
+	sqlite3 *db;
+	int rc;
 
-	dbfile = (*jenv)->GetStringUTFChars(jenv, jfilepath, 0);
+	dbPath = (*jenv)->GetStringUTFChars(jenv, jfilepath, 0);	
 
-	rc = sqlite3_open_v2(dbfile, &db, (int) jflags, 0);
+	rc = sqlite3_open_v2(dbPath, &db, (int) jflags, 0);
 
-	if (rc != SQLITE_OK)
+	if (rc == SQLITE_OK)
 	{
+		*((sqlite3**) &result) = db;
+	}
+	else
+	{
+		result = 0;
+
+		const char *errmsg;
+		jstring error;
+
 		errmsg = sqlite3_errmsg(db);
 		if (errmsg)
 		{
 			error = (*jenv)->NewStringUTF(jenv, errmsg);
 			if (error)
 			{
-				(*jenv)->SetObjectArrayElement(jenv, joutError, 0, error);
+				(*jenv)->SetObjectArrayElement(jenv, jErrorArray, 0, error);
 			}
 		}
 
@@ -33,19 +41,13 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_open
 		}
 	}
 
-	if (db)
-	{
-		*((sqlite3**) &result) = db;
-		(*jenv)->SetLongArrayRegion(jenv, jresult, 0, 1, &result);
-	}
+	(*jenv)->SetIntArrayRegion(jenv, jCodeArray, 0, 1, &rc);
 
-	(*jenv)->ReleaseStringUTFChars(jenv, jfilepath, dbfile);
-
-	return rc;
+	return result;
 }
 
-JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_prepare
-(JNIEnv *jenv, jobject thiz, jlong jdb, jstring jsql, jlongArray jresult)
+JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_prepare
+(JNIEnv *jenv, jobject thiz, jlong jdb, jstring jsql, jintArray jCodeArray)
 {
 	sqlite3 *db;
 	const char *sql;
@@ -61,12 +63,17 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_prepare
 	if (stmt)
 	{
 		*((sqlite3_stmt**) &result) = stmt;
-		(*jenv)->SetLongArrayRegion(jenv, jresult, 0, 1, &result);
+	}
+	else
+	{
+		result = 0;
 	}
 
 	(*jenv)->ReleaseStringUTFChars(jenv, jsql, sql);
 
-	return rc;
+	(*jenv)->SetIntArrayRegion(jenv, jCodeArray, 0, 1, &rc);
+
+	return result;
 }
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_exec
@@ -108,7 +115,7 @@ JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_lastInsertId
 JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Database_lastErrorMessage
 (JNIEnv *jenv, jobject thiz, jlong jdb)
 {
-	sqlite3 *db = *(sqlite3**) &db;
+	sqlite3 *db = *(sqlite3**) &jdb;
 
 	const char *errmsg = sqlite3_errmsg(db);
 
