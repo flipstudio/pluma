@@ -95,5 +95,9 @@ public final class ResultSet {
   public BigInteger getBigInteger(int columnIndex) {
     return getBigDecimal(columnIndex).toBigInteger();
   }
+
+  public Object getObject(int columnIndex) {
+    return mStatement.getObject(columnIndex);
+  }
   //endregion
 }

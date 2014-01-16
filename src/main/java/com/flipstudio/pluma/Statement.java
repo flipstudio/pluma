@@ -2,7 +2,11 @@ package com.flipstudio.pluma;
 
 import java.util.TreeMap;
 
+import static com.flipstudio.pluma.Pluma.SQLITE_BLOB;
+import static com.flipstudio.pluma.Pluma.SQLITE_FLOAT;
+import static com.flipstudio.pluma.Pluma.SQLITE_INTEGER;
 import static com.flipstudio.pluma.Pluma.SQLITE_NULL;
+import static com.flipstudio.pluma.Pluma.SQLITE_TEXT;
 
 /**
  * Created by Pietro Caselani
@@ -87,6 +91,24 @@ final class Statement {
 
   public String getString(int columnIndex) {
     return getText(mStmt, columnIndex);
+  }
+
+  public Object getObject(int columnIndex) {
+    int columnType = getColumnType(mStmt, columnIndex);
+    if (columnType == SQLITE_NULL) {
+      return null;
+    } else if (columnType == SQLITE_INTEGER) {
+      return getLong(mStmt, columnIndex);
+    } else if (columnType == SQLITE_FLOAT) {
+      return getDouble(mStmt, columnIndex);
+    } else if (columnType == SQLITE_TEXT) {
+      return getText(mStmt, columnIndex);
+    } else if (columnType == SQLITE_BLOB) {
+      //TODO getBlob()
+      return null;
+    }
+
+    return null;
   }
 
   public int getColumnType(int columnIndex) {
