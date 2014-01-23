@@ -60,13 +60,15 @@ JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_prepare
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
 
-	if (stmt)
+	if (stmt != 0 && rc == SQLITE_OK)
 	{
 		*((sqlite3_stmt**) &result) = stmt;
 	}
 	else
 	{
 		result = 0;
+
+		sqlite3_finalize(stmt);
 	}
 
 	(*jenv)->ReleaseStringUTFChars(jenv, jsql, sql);

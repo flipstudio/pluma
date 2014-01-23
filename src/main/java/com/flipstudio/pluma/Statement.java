@@ -50,7 +50,7 @@ final class Statement {
   private native int getColumnCount(long stmt);
   private native int step(long stmt);
   private native int finalize(long stmt);
-  //TODO getBlob(), getObject(), reset(Clear binds)...
+  //TODO getBlob(), reset(Clear binds)...
   //endregion
 
   //region Public
