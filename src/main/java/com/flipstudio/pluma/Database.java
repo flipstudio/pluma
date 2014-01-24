@@ -140,7 +140,13 @@ public final class Database {
   private boolean executeUpdate(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
     notifyListenerOnExecuteQuery(sql);
 
-    return compileStatement(sql, listArgs, mapArgs).step() == SQLITE_DONE;
+    Statement statement = compileStatement(sql, listArgs, mapArgs);
+
+    int rc = statement.step();
+
+    statement.close();
+
+    return rc == SQLITE_DONE;
   }
 
   private ResultSet executeQuery(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
