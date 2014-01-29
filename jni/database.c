@@ -95,6 +95,8 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_exec
 
 	(*jenv)->ReleaseStringUTFChars(jenv, jsql, sql);
 
+	sqlite3_free(outError);
+
 	return rc;
 }
 

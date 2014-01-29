@@ -146,7 +146,11 @@ public final class Database {
 
     statement.close();
 
-    return rc == SQLITE_DONE;
+    if (rc != SQLITE_DONE) {
+      throw new SQLiteException(rc, getLastErrorMessage());
+    }
+
+    return true;
   }
 
   private ResultSet executeQuery(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
