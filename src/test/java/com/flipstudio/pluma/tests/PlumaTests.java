@@ -35,7 +35,8 @@ public class PlumaTests {
       throw new RuntimeException("Can not delete database file.");
     }
 
-    mDatabase = Database.open(DATABASE_FILE.getPath());
+    mDatabase = new Database(DATABASE_FILE.getPath());
+    mDatabase.open();
 
     assertTrue("Can not open database.", mDatabase.isOpen() && DATABASE_FILE.exists());
 

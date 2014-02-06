@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_open
-(JNIEnv *, jclass, jstring, jint, jintArray, jobjectArray);
+(JNIEnv *, jobject, jstring, jint, jintArray, jobjectArray);
 
 JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_prepare
 (JNIEnv *, jobject, jlong, jstring, jintArray);
@@ -25,6 +25,9 @@ JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_lastInsertId
 
 JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Database_lastErrorMessage
 (JNIEnv *, jobject, jlong);
+
+JNIEXPORT void JNICALL Java_com_flipstudio_pluma_Database_setTempDir
+(JNIEnv *, jobject, jstring);
 
 #ifdef __cplusplus
 }
