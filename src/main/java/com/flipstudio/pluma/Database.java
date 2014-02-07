@@ -22,6 +22,7 @@ import static java.util.Arrays.asList;
 public final class Database {
   //region Fields
   private final String mPath;
+  private String mTempDir;
   private long mDB;
   private DatabaseListener mDatabaseListener;
   //endregion
@@ -35,6 +36,7 @@ public final class Database {
   //region Constructors
   public Database(String path) {
     mPath = path;
+    mTempDir = new File(path).getParent();
   }
   //endregion
 
@@ -54,8 +56,6 @@ public final class Database {
   }
 
   public void open(int flags) throws SQLiteException {
-    setTempDir(new File(mPath).getParent());
-
     int[] codes = new int[1];
     String[] errors = new String[1];
 
@@ -66,10 +66,16 @@ public final class Database {
     }
 
     mDB = db;
+
+    setTempDir(mTempDir);
   }
 
   public void setTempDirectory(String tempDir) {
-    setTempDir(tempDir);
+    if (isOpen()) {
+      setTempDir(tempDir);
+    }
+
+    mTempDir = tempDir;
   }
 
   public void execute(String sql) throws SQLiteException {
