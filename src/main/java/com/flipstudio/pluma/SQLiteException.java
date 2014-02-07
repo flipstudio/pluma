@@ -7,14 +7,19 @@ package com.flipstudio.pluma;
  */
 public final class SQLiteException extends Exception {
   //region Fields
-  private int mErrorCode;
-  private String mErrorMessage;
+  private final int mErrorCode;
+  private final String mErrorMessage, mQuery;
   //endregion
 
   //region Constructors
   SQLiteException(int errorCode, String errorMessage) {
+    this(errorCode, errorMessage, null);
+  }
+
+  SQLiteException(int errorCode, String errorMessage, String query) {
     mErrorCode = errorCode;
     mErrorMessage = errorMessage;
+    mQuery = query;
   }
   //endregion
 
@@ -26,11 +31,15 @@ public final class SQLiteException extends Exception {
   public String getErrorMessage() {
     return mErrorMessage;
   }
+
+  public String getQuery() {
+    return mQuery;
+  }
   //endregion
 
   //region Object
   @Override public String toString() {
-    return "SQLiteException\nError code: " + mErrorCode + "\nError Message: " + mErrorMessage;
+    return "SQLiteException\nError code: " + mErrorCode + "\nError Message: " + mErrorMessage + (mQuery != null ? "\nQuery: " + mQuery : "");
   }
   //endregion
 }

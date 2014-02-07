@@ -1,5 +1,6 @@
 #!/bin/sh
 
+rm -rf obj/ libs/
 ndk-build clean
 ndk-build
 mkdir -p obj/local/mac

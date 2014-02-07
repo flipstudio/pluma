@@ -2,7 +2,7 @@
 #include <sqlite3.h>
 
 JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_open
-(JNIEnv *jenv, jclass clazz, jstring jfilepath, jint jflags, jintArray jCodeArray, jobjectArray jErrorArray)
+(JNIEnv *jenv, jobject thiz, jstring jfilepath, jint jflags, jintArray jCodeArray, jobjectArray jErrorArray)
 {
 	const char *dbPath;
 	jlong result;
@@ -12,6 +12,8 @@ JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_open
 	dbPath = (*jenv)->GetStringUTFChars(jenv, jfilepath, 0);	
 
 	rc = sqlite3_open_v2(dbPath, &db, (int) jflags, 0);
+
+	(*jenv)->ReleaseStringUTFChars(jenv, jfilepath, dbPath);
 
 	if (rc == SQLITE_OK)
 	{
@@ -49,16 +51,17 @@ JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_open
 JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_prepare
 (JNIEnv *jenv, jobject thiz, jlong jdb, jstring jsql, jintArray jCodeArray)
 {
-	sqlite3 *db;
-	const char *sql;
+	sqlite3 *db = *(sqlite3**) &jdb;
 	sqlite3_stmt *stmt;
 	int rc;
 	jlong result;
 
-	db = *(sqlite3**) &jdb;
-	sql = (*jenv)->GetStringUTFChars(jenv, jsql, 0);
+	jsize sqlLength = (*jenv)->GetStringLength(jenv, jsql);
+	const jchar* sql = (*jenv)->GetStringCritical(jenv, jsql, 0);
 
-	rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+	rc = sqlite3_prepare16_v2(db, sql, sqlLength * sizeof(jchar), &stmt, 0);
+
+	(*jenv)->ReleaseStringCritical(jenv, jsql, sql);
 
 	if (stmt != 0 && rc == SQLITE_OK)
 	{
@@ -70,8 +73,6 @@ JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_prepare
 
 		sqlite3_finalize(stmt);
 	}
-
-	(*jenv)->ReleaseStringUTFChars(jenv, jsql, sql);
 
 	(*jenv)->SetIntArrayRegion(jenv, jCodeArray, 0, 1, &rc);
 
@@ -87,13 +88,15 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_exec
 
 	int rc = sqlite3_exec(db, sql, 0, 0, &outError);
 
+	(*jenv)->ReleaseStringUTFChars(jenv, jsql, sql);
+
 	if (rc != SQLITE_OK)
 	{
 		jstring error = (*jenv)->NewStringUTF(jenv, outError);
 		(*jenv)->SetObjectArrayElement(jenv, joutError, 0, error);
 	}
 
-	(*jenv)->ReleaseStringUTFChars(jenv, jsql, sql);
+	sqlite3_free(outError);
 
 	return rc;
 }
@@ -122,4 +125,10 @@ JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Database_lastErrorMessage
 	const char *errmsg = sqlite3_errmsg(db);
 
 	return (*jenv)->NewStringUTF(jenv, errmsg);
+}
+
+JNIEXPORT void JNICALL Java_com_flipstudio_pluma_Database_setTempDir
+(JNIEnv *jenv, jobject thiz, jstring jtmpDir)
+{
+	sqlite3_temp_directory = (*jenv)->GetStringUTFChars(jenv, jtmpDir, 0);
 }

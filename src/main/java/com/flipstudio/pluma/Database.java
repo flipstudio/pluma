@@ -1,5 +1,6 @@
 package com.flipstudio.pluma;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
@@ -20,6 +21,8 @@ import static java.util.Arrays.asList;
  */
 public final class Database {
   //region Fields
+  private final String mPath;
+  private String mTempDir;
   private long mDB;
   private DatabaseListener mDatabaseListener;
   //endregion
@@ -28,48 +31,60 @@ public final class Database {
   static {
     System.loadLibrary("pluma");
   }
-
-  public static Database open(String filePath) throws SQLiteException {
-    return open(filePath, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE);
-  }
-
-  public static Database open(String filePath, int flags) throws SQLiteException {
-    int[] codes = new int[1];
-    String[] errors = new String[1];
-
-    long db = open(filePath, flags, codes, errors);
-
-    if (codes[0] != SQLITE_OK || db <= 0 || errors[0] != null) {
-      throw new SQLiteException(codes[0], errors[0]);
-    }
-
-    return new Database(db);
-  }
   //endregion
 
   //region Constructors
-  private Database(long db) {
-    mDB = db;
+  public Database(String path) {
+    mPath = path;
+    mTempDir = new File(path).getParent();
   }
   //endregion
 
   //region Native
-  public static native long open(String filePath, int flags, int[] ppOpenCode, String[] ppOpenError);
+  private native long open(String filePath, int flags, int[] ppOpenCode, String[] ppOpenError);
   private native long prepare(long db, String sql, int[] ppPrepareCode);
   private native int exec(long db, String sql, String[] ppOutError);
   private native int close(long db);
   private native long lastInsertId(long db);
   private native String lastErrorMessage(long db);
+  private native void setTempDir(String tempDir);
   //endregion
 
   //region Public
+  public void open() throws SQLiteException {
+    open(SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE);
+  }
+
+  public void open(int flags) throws SQLiteException {
+    int[] codes = new int[1];
+    String[] errors = new String[1];
+
+    long db = open(mPath, flags, codes, errors);
+
+    if (codes[0] != SQLITE_OK || db <= 0 || errors[0] != null) {
+      throw new SQLiteException(codes[0], errors[0]);
+    }
+
+    mDB = db;
+
+    setTempDir(mTempDir);
+  }
+
+  public void setTempDirectory(String tempDir) {
+    if (isOpen()) {
+      setTempDir(tempDir);
+    }
+
+    mTempDir = tempDir;
+  }
+
   public void execute(String sql) throws SQLiteException {
     String[] errors = new String[1];
 
     int rc = exec(mDB, sql, errors);
 
     if (rc != SQLITE_OK) {
-      throw new SQLiteException(rc, errors[0]);
+      throw new SQLiteException(rc, errors[0], sql);
     }
 
     notifyListenerOnExecuteQuery(sql);
@@ -128,6 +143,10 @@ public final class Database {
   public boolean isOpen() {
     return mDB > 0;
   }
+
+  public String getDatabasePath() {
+    return mPath;
+  }
   //endregion
 
   //region Package
@@ -138,21 +157,27 @@ public final class Database {
 
   //region Private
   private boolean executeUpdate(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-    notifyListenerOnExecuteQuery(sql);
-
     Statement statement = compileStatement(sql, listArgs, mapArgs);
 
     int rc = statement.step();
 
     statement.close();
 
-    return rc == SQLITE_DONE;
-  }
+    if (rc != SQLITE_DONE) {
+      throw new SQLiteException(rc, getLastErrorMessage(), sql);
+    }
 
-  private ResultSet executeQuery(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
     notifyListenerOnExecuteQuery(sql);
 
-    return new ResultSet(this, compileStatement(sql, listArgs, mapArgs));
+    return true;
+  }
+
+  private ResultSet executeQuery(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
+    ResultSet rs = new ResultSet(this, compileStatement(query, listArgs, mapArgs));
+
+    notifyListenerOnExecuteQuery(query);
+
+    return rs;
   }
 
   private void notifyListenerOnExecuteQuery(String sql) {
@@ -161,15 +186,15 @@ public final class Database {
     }
   }
 
-  private Statement compileStatement(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
+  private Statement compileStatement(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
     int[] prepareCode = new int[1];
     int rc;
 
-    long stmt = prepare(mDB, sql, prepareCode);
+    long stmt = prepare(mDB, query, prepareCode);
     rc = prepareCode[0];
 
     if (rc != SQLITE_OK || stmt == 0) {
-      throw new SQLiteException(rc, lastErrorMessage(mDB));
+      throw new SQLiteException(rc, lastErrorMessage(mDB), query);
     }
 
     Statement statement = new Statement(stmt);
@@ -187,7 +212,7 @@ public final class Database {
           bindObject(mapArgs.get(key), parameterIndex, statement);
           index++;
         } else {
-          throw new SQLiteException(SQLITE_MISUSE, "Parameter index not found for name " + key + "' in query:\n" + sql);
+          throw new SQLiteException(SQLITE_MISUSE, "Parameter index not found for name " + key + "'", query);
         }
       }
     } else if (listArgs != null && listArgs.size() > 0) {
@@ -202,7 +227,7 @@ public final class Database {
         throw new SQLiteException(rc, lastErrorMessage(mDB));
       }
 
-      throw new SQLiteException(SQLITE_MISUSE, "The bind count is not correct for the number of variables");
+      throw new SQLiteException(SQLITE_MISUSE, "The bind count is not correct for the number of variables", query);
     }
 
     return statement;
