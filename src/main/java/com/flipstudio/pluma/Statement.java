@@ -6,6 +6,7 @@ import static com.flipstudio.pluma.Pluma.SQLITE_BLOB;
 import static com.flipstudio.pluma.Pluma.SQLITE_FLOAT;
 import static com.flipstudio.pluma.Pluma.SQLITE_INTEGER;
 import static com.flipstudio.pluma.Pluma.SQLITE_NULL;
+import static com.flipstudio.pluma.Pluma.SQLITE_OK;
 import static com.flipstudio.pluma.Pluma.SQLITE_TEXT;
 
 /**
@@ -15,9 +16,9 @@ import static com.flipstudio.pluma.Pluma.SQLITE_TEXT;
  */
 final class Statement {
   //region Fields
-  private final long mStmt;
   private final int mColumnCount;
   private final TreeMap<String, Integer> mColumnNameIndexes;
+  private long mStmt;
   //endregion
 
   //region Constructors
@@ -148,8 +149,16 @@ final class Statement {
     return bindParameterIndex(mStmt, parameterName);
   }
 
-  public int close() throws SQLiteException {
-    return finalize(mStmt);
+  public boolean isClosed() {
+    return mStmt == 0;
+  }
+
+  public int close() {
+    int rc = finalize(mStmt);
+
+    if (rc == SQLITE_OK) mStmt = 0;
+
+    return rc;
   }
   //endregion
 }

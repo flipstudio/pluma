@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -127,6 +128,24 @@ public class PlumaTests {
         "SELECT id, name, lastName, birth FROM people",
         "SELECT id, name FROM people WHERE id = ?",
         "SELECT id FROM people WHERE name = :FirstName");
+  }
+  //endregion
+
+  //region Next
+  @Test public void testNext() throws Exception {
+    startTest("Next");
+
+    ResultSet rs = mDatabase.executeQuery("SELECT name FROM people WHERE id = ?", 2);
+    if (rs.next()) {
+      assertEquals("Unexpected name", "Damon", rs.getString(0));
+    }
+    assertTrue("Unable to close result set ", rs.close());
+
+    assertTrue("Unable to execute update", mDatabase.executeUpdate("DELETE FROM people"));
+
+    rs = mDatabase.executeQuery("SELECT id, name FROM people");
+    assertFalse("Unexpected value", rs.next());
+    assertTrue("Unexpected value", rs.close());
   }
   //endregion
 

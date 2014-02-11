@@ -41,6 +41,8 @@ public final class ResultSet {
   }
 
   public boolean close() throws SQLiteException {
+    if (mStatement.isClosed()) return true;
+
     int rc = mStatement.close();
     if (rc != SQLITE_OK) {
       throw new SQLiteException(rc, mDatabase.getLastErrorMessage());
