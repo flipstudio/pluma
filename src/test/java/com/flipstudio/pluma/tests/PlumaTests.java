@@ -1,11 +1,15 @@
 package com.flipstudio.pluma.tests;
 
 import com.flipstudio.pluma.Database;
+import com.flipstudio.pluma.Pluma;
 import com.flipstudio.pluma.ResultSet;
+import com.flipstudio.pluma.Statement;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.junit.Before;
@@ -182,6 +186,57 @@ public class PlumaTests {
     }
 
     assertTrue("Can not close result set.", rs.close());
+  }
+  //endregion
+
+  //region Statements
+  @Test public void testResetStatement() throws Exception {
+    Statement statement =
+        mDatabase.prepareStatement("INSERT INTO people (name, lastName, birth) VALUES (?, ?, ?)");
+
+    List<Object> binds = Arrays.<Object>asList(
+        "Donna", "Hope", new Date(1374143861000L),
+        "Judith", "Maia", new Date(1415985639000L),
+        "Willa", "Janna", new Date(1381038472000L)
+    );
+    int bindIndex = 1;
+
+    for (Object object : binds) {
+      assertEquals("Could not bind object", Pluma.SQLITE_OK, statement.bindObject(bindIndex++, object));
+      if (bindIndex == 4) {
+        assertEquals("Could not execute statement", Pluma.SQLITE_DONE, statement.step());
+        bindIndex = 1;
+        assertEquals("Could not reset statement", Pluma.SQLITE_OK, statement.reset());
+      }
+    }
+
+    assertEquals("Could not close statement", Pluma.SQLITE_OK, statement.close());
+  }
+
+  @Test public void testClearStatement() throws Exception {
+    Statement statement =
+        mDatabase.prepareStatement("INSERT INTO people (name, lastName, birth) VALUES (?, ?, ?)");
+
+    assertEquals("Could not bind first object", Pluma.SQLITE_OK, statement.bind(1, "Cecilia"));
+    assertEquals("Could not bind second object", Pluma.SQLITE_OK, statement.bind(2, "Marshall"));
+    assertEquals("Could not bind third object", Pluma.SQLITE_OK, statement.bind(3, 1419088806000L));
+
+    assertEquals("Could not clear statement", Pluma.SQLITE_OK, statement.clearBindings());
+
+    assertEquals("Could not bind first object", Pluma.SQLITE_OK, statement.bind(1, "Ivory"));
+    assertEquals("Could not bind second object", Pluma.SQLITE_OK, statement.bind(2, "Mariko"));
+    assertEquals("Could not bind third object", Pluma.SQLITE_OK, statement.bind(3, 1421394493000L));
+
+    assertEquals("Could not execute statement", Pluma.SQLITE_DONE, statement.step());
+
+    long id = mDatabase.getLastInsertId();
+
+    ResultSet rs = mDatabase.executeQuery("SELECT name FROM people WHERE id = ?", id);
+    assertTrue("Empty result set", rs.next());
+    assertEquals("Invalid name", "Ivory", rs.getString(0));
+    assertTrue("Could not close result set", rs.close());
+
+    assertEquals("Could not close statement", Pluma.SQLITE_OK, statement.close());
   }
   //endregion
 

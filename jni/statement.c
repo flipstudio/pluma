@@ -133,6 +133,22 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_step
 	return sqlite3_step(stmt);
 }
 
+JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_clearBindings
+(JNIEnv *jenv, jobject thiz, jlong jstmt)
+{
+	sqlite3_stmt *stmt = *(sqlite3_stmt**) &jstmt;
+
+	return sqlite3_clear_bindings(stmt);
+}
+
+JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_reset
+(JNIEnv *jenv, jobject thiz, jlong jstmt)
+{
+	sqlite3_stmt *stmt = *(sqlite3_stmt**) &jstmt;
+
+	return sqlite3_reset(stmt);
+}
+
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_finalize
 (JNIEnv *jenv, jobject thiz, jlong jstmt)
 {

@@ -1,9 +1,6 @@
 package com.flipstudio.pluma;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -76,6 +73,20 @@ public final class Database {
     }
 
     mTempDir = tempDir;
+  }
+
+  public Statement prepareStatement(String sql) throws SQLiteException {
+    int[] prepareCode = new int[1];
+    int rc;
+
+    long stmt = prepare(mDB, sql, prepareCode);
+    rc = prepareCode[0];
+
+    if (rc != SQLITE_OK || stmt == 0) {
+      throw new SQLiteException(rc, lastErrorMessage(mDB), sql);
+    }
+
+    return new Statement(stmt);
   }
 
   public void execute(String sql) throws SQLiteException {
@@ -187,19 +198,9 @@ public final class Database {
   }
 
   private Statement compileStatement(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-    int[] prepareCode = new int[1];
-    int rc;
+    Statement statement = prepareStatement(query);
 
-    long stmt = prepare(mDB, query, prepareCode);
-    rc = prepareCode[0];
-
-    if (rc != SQLITE_OK || stmt == 0) {
-      throw new SQLiteException(rc, lastErrorMessage(mDB), query);
-    }
-
-    Statement statement = new Statement(stmt);
-
-    int index = 1, bindsCount = statement.getBindParameterCount() + 1;
+    int rc, index = 1, bindsCount = statement.getBindParameterCount() + 1;
 
     if (mapArgs != null && mapArgs.size() > 0) {
       String parameterName;
@@ -209,7 +210,7 @@ public final class Database {
         parameterName = ":" + key;
 
         if ((parameterIndex = statement.getParameterIndex(parameterName)) > 0) {
-          bindObject(mapArgs.get(key), parameterIndex, statement);
+          statement.bindObject(parameterIndex, mapArgs.get(key));
           index++;
         } else {
           throw new SQLiteException(SQLITE_MISUSE, "Parameter index not found for name " + key + "'", query);
@@ -217,7 +218,7 @@ public final class Database {
       }
     } else if (listArgs != null && listArgs.size() > 0) {
       for (Object object : listArgs) {
-        bindObject(object, index++, statement);
+        statement.bindObject(index++, object);
       }
     }
 
@@ -231,37 +232,6 @@ public final class Database {
     }
 
     return statement;
-  }
-
-  private void bindObject(Object object, int index, Statement statement) throws SQLiteException {
-    int rc;
-    if (object == null) {
-      rc = statement.bindNull(index);
-    } else if (object instanceof Integer) {
-      rc = statement.bind(index, (Integer) object);
-    } else if (object instanceof Boolean) {
-      rc = statement.bind(index, (Boolean) object ? 1 : 0);
-    } else if (object instanceof Long) {
-      rc = statement.bind(index, (Long) object);
-    } else if (object instanceof Date) {
-      rc = statement.bind(index, ((Date) object).getTime());
-    } else if (object instanceof Double) {
-      rc = statement.bind(index, (Double) object);
-    } else if (object instanceof Float) {
-      rc = statement.bind(index, ((Float) object).doubleValue());
-    } else if (object instanceof String) {
-      rc = statement.bind(index, (String) object);
-    } else if (object instanceof BigDecimal) {
-      rc = statement.bind(index, ((BigDecimal) object).doubleValue());
-    } else if (object instanceof BigInteger) {
-      rc = statement.bind(index, ((BigInteger) object).longValue());
-    } else {
-      rc = -1;
-    }
-
-    if (rc != SQLITE_OK) {
-      throw new SQLiteException(rc, lastErrorMessage(mDB));
-    }
   }
   //endregion
 
