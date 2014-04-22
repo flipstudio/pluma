@@ -38,9 +38,9 @@ public final class Pluma {
   //endregion
 
   //region Constants
-  static final int SQLITE_OK = 0;   /* Successful result */
-  static final int SQLITE_ROW = 100;  /* sqlite3_step() has another row ready */
-  static final int SQLITE_DONE = 101;  /* sqlite3_step() has finished executing */
+  public static final int SQLITE_OK = 0;   /* Successful result */
+  public static final int SQLITE_ROW = 100;  /* sqlite3_step() has another row ready */
+  public static final int SQLITE_DONE = 101;  /* sqlite3_step() has finished executing */
   //endregion
 
   //region Column Types

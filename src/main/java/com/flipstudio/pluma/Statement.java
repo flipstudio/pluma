@@ -1,8 +1,12 @@
 package com.flipstudio.pluma;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Date;
 import java.util.TreeMap;
 
 import static com.flipstudio.pluma.Pluma.SQLITE_BLOB;
+import static com.flipstudio.pluma.Pluma.SQLITE_ERROR;
 import static com.flipstudio.pluma.Pluma.SQLITE_FLOAT;
 import static com.flipstudio.pluma.Pluma.SQLITE_INTEGER;
 import static com.flipstudio.pluma.Pluma.SQLITE_NULL;
@@ -14,7 +18,7 @@ import static com.flipstudio.pluma.Pluma.SQLITE_TEXT;
  * On 13/11/13
  * Pluma
  */
-final class Statement {
+public final class Statement {
   //region Fields
   private final int mColumnCount;
   private final TreeMap<String, Integer> mColumnNameIndexes;
@@ -51,7 +55,9 @@ final class Statement {
   private native int getColumnCount(long stmt);
   private native int step(long stmt);
   private native int finalize(long stmt);
-  //TODO getBlob(), reset(Clear binds)...
+  private native int clearBindings(long stmt);
+  private native int reset(long stmt);
+  //TODO getBlob()...
   //endregion
 
   //region Public
@@ -74,6 +80,35 @@ final class Statement {
 
   public int bindNull(int index) {
     return bindNull(mStmt, index);
+  }
+
+  public int bindObject(int index, Object object) {
+    int rc;
+    if (object == null) {
+      rc = bindNull(index);
+    } else if (object instanceof Integer) {
+      rc = bind(index, (Integer) object);
+    } else if (object instanceof Boolean) {
+      rc = bind(index, (Boolean) object ? 1 : 0);
+    } else if (object instanceof Long) {
+      rc = bind(index, (Long) object);
+    } else if (object instanceof Date) {
+      rc = bind(index, ((Date) object).getTime());
+    } else if (object instanceof Double) {
+      rc = bind(index, (Double) object);
+    } else if (object instanceof Float) {
+      rc = bind(index, ((Float) object).doubleValue());
+    } else if (object instanceof String) {
+      rc = bind(index, (String) object);
+    } else if (object instanceof BigDecimal) {
+      rc = bind(index, ((BigDecimal) object).doubleValue());
+    } else if (object instanceof BigInteger) {
+      rc = bind(index, ((BigInteger) object).longValue());
+    } else {
+      rc = SQLITE_ERROR;
+    }
+
+    return rc;
   }
   //endregion
 
@@ -139,6 +174,14 @@ final class Statement {
 
   public int step() {
     return step(mStmt);
+  }
+
+  public int clearBindings() {
+    return clearBindings(mStmt);
+  }
+
+  public int reset() {
+    return reset(mStmt);
   }
 
   public int getBindParameterCount() {
