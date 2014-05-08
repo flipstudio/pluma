@@ -6,9 +6,9 @@ Pluma is a SQLite wrapper for Java and Android, based on [iOS FMDB][1].
 #Usage
 ---
 There are three main classes in Pluma:
-1. ```Database``` - Represents a single SQLite database. Used for executing SQL statements.
-2. ```ResultSet``` - Represents the results of a query executed by ```Database```.
-3. ```Statement``` - Represents a single compiled SQL statement. Use ```Database.prepareStatement```.
+* ```Database``` - Represents a single SQLite database. Used for executing SQL statements.
+* ```ResultSet``` - Represents the results of a query executed by ```Database```.
+* ```Statement``` - Represents a single compiled SQL statement. Use ```Database.prepareStatement```.
 
 Almost all operations performed by the ```Database``` and ```ResultSet``` throws a ```SQLiteException```.
 
