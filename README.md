@@ -46,11 +46,11 @@ Statement Parameters
 * List
 ```java
 List<Object> args = Arrays.asList(5, 10);
-ResultSet resultSet = database.executeQuery("SELECT name FROM people WHERE id = ? AND id = ?", args);
+ResultSet resultSet = database.executeQuery("SELECT name FROM people WHERE id = ? OR id = ?", args);
 ```
 or
 ```java
-ResultSet resultSet = database.executeQuery("SELECT name FROM people WHERE id = ? AND id = ?", 5, 10);
+ResultSet resultSet = database.executeQuery("SELECT name FROM people WHERE id = ? OR id = ?", 5, 10);
 ```
 
 * Named parameters
