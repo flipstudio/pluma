@@ -137,6 +137,18 @@ public final class Database {
     return lastInsertId(mDB);
   }
 
+  public String getLastErrorMessage() {
+    return lastErrorMessage(mDB);
+  }
+
+  /*
+  Use with native code.
+  sqlite3 *db = *(sqlite3**) &jdb;
+   */
+  public long getSQLiteHandler() {
+    return mDB;
+  }
+
   public boolean close() throws SQLiteException {
     int rc = close(mDB);
     if (rc != SQLITE_OK) {
@@ -157,12 +169,6 @@ public final class Database {
 
   public String getDatabasePath() {
     return mPath;
-  }
-  //endregion
-
-  //region Package
-  String getLastErrorMessage() {
-    return lastErrorMessage(mDB);
   }
   //endregion
 
