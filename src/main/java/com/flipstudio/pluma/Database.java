@@ -26,6 +26,8 @@ public final class Database {
 
   //region Static
   static {
+    System.loadLibrary("c++_shared");
+    System.loadLibrary("sqlite");
     System.loadLibrary("pluma");
   }
   //endregion
@@ -58,7 +60,7 @@ public final class Database {
 
     long db = open(mPath, flags, codes, errors);
 
-    if (codes[0] != SQLITE_OK || db <= 0 || errors[0] != null) {
+    if (codes[0] != SQLITE_OK || db == 0 || errors[0] != null) {
       throw new SQLiteException(codes[0], errors[0]);
     }
 
@@ -143,7 +145,7 @@ public final class Database {
 
   /*
   Use with native code.
-  sqlite3 *db = *(sqlite3**) &jdb;
+  sqlite3 *db = reinterpret_cast<sqlite3*>(jdb);
    */
   public long getSQLiteHandler() {
     return mDB;
