@@ -1,4 +1,4 @@
-APP_ABI := armeabi armeabi-v7a
+APP_ABI := all
 APP_STL := c++_shared
 APP_CFLAGS := -std=c++11
 NDK_TOOLCHAIN_VERSION := 4.8
