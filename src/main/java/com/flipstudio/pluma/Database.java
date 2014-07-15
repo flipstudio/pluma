@@ -26,8 +26,6 @@ public final class Database {
 
   //region Static
   static {
-    System.loadLibrary("c++_shared");
-    System.loadLibrary("sqlite");
     System.loadLibrary("pluma");
   }
   //endregion
