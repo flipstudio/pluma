@@ -218,8 +218,6 @@ public final class Database {
         if ((parameterIndex = statement.getParameterIndex(parameterName)) > 0) {
           statement.bindObject(parameterIndex, mapArgs.get(key));
           index++;
-        } else {
-          throw new SQLiteException(SQLITE_MISUSE, "Parameter index not found for name " + key + "'", query);
         }
       }
     } else if (listArgs != null && listArgs.size() > 0) {
