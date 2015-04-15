@@ -17,239 +17,245 @@ import static java.util.Arrays.asList;
  * Pluma
  */
 public final class Database {
-  //region Fields
-  private final String mPath;
-  private String mTempDir;
-  private long mDB;
-  private DatabaseListener mDatabaseListener;
-  //endregion
+	//region Fields
+	private final String mPath;
+	private String mTempDir;
+	private long mDB;
+	private DatabaseListener mDatabaseListener;
+	//endregion
 
-  //region Static
-  static {
-    System.loadLibrary("pluma");
-  }
-  //endregion
+	//region Static
+	static {
+		System.loadLibrary("pluma");
+	}
+	//endregion
 
-  //region Constructors
-  public Database(String path) {
-    mPath = path;
-    mTempDir = new File(path).getParent();
-  }
-  //endregion
+	//region Constructors
+	public Database(String path) {
+		mPath = path;
+		mTempDir = new File(path).getParent();
+	}
+	//endregion
 
-  //region Native
-  private native long open(String filePath, int flags, int[] ppOpenCode, String[] ppOpenError);
-  private native long prepare(long db, String sql, int[] ppPrepareCode);
-  private native int exec(long db, String sql, String[] ppOutError);
-  private native int close(long db);
-  private native long lastInsertId(long db);
-  private native String lastErrorMessage(long db);
-  private native void setTempDir(String tempDir);
-  //endregion
+	//region Native
+	private native long open(String filePath, int flags, int[] ppOpenCode, String[] ppOpenError);
 
-  //region Public
-  public void open() throws SQLiteException {
-    open(SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE);
-  }
+	private native long prepare(long db, String sql, int[] ppPrepareCode);
 
-  public void open(int flags) throws SQLiteException {
-    int[] codes = new int[1];
-    String[] errors = new String[1];
+	private native int exec(long db, String sql, String[] ppOutError);
 
-    long db = open(mPath, flags, codes, errors);
+	private native int close(long db);
 
-    if (codes[0] != SQLITE_OK || db == 0 || errors[0] != null) {
-      throw new SQLiteException(codes[0], errors[0]);
-    }
+	private native long lastInsertId(long db);
 
-    mDB = db;
+	private native String lastErrorMessage(long db);
 
-    setTempDir(mTempDir);
-  }
+	private native void setTempDir(String tempDir);
+	//endregion
 
-  public void setTempDirectory(String tempDir) {
-    if (isOpen()) {
-      setTempDir(tempDir);
-    }
+	//region Public
+	public void open() throws SQLiteException {
+		open(SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE);
+	}
 
-    mTempDir = tempDir;
-  }
+	public void open(int flags) throws SQLiteException {
+		int[] codes = new int[1];
+		String[] errors = new String[1];
 
-  public Statement prepareStatement(String sql) throws SQLiteException {
-    int[] prepareCode = new int[1];
-    int rc;
+		long db = open(mPath, flags, codes, errors);
 
-    long stmt = prepare(mDB, sql, prepareCode);
-    rc = prepareCode[0];
+		if (codes[0] != SQLITE_OK || db == 0 || errors[0] != null) {
+			throw new SQLiteException(codes[0], errors[0]);
+		}
 
-    if (rc != SQLITE_OK || stmt == 0) {
-      throw new SQLiteException(rc, lastErrorMessage(mDB), sql);
-    }
+		mDB = db;
 
-    return new Statement(stmt);
-  }
+		setTempDir(mTempDir);
+	}
 
-  public void execute(String sql) throws SQLiteException {
-    String[] errors = new String[1];
+	public void setTempDirectory(String tempDir) {
+		if (isOpen()) {
+			setTempDir(tempDir);
+		}
 
-    int rc = exec(mDB, sql, errors);
+		mTempDir = tempDir;
+	}
 
-    if (rc != SQLITE_OK) {
-      throw new SQLiteException(rc, errors[0], sql);
-    }
+	public Statement prepareStatement(String sql) throws SQLiteException {
+		int[] prepareCode = new int[1];
+		int rc;
 
-    notifyListenerOnExecuteQuery(sql);
-  }
+		long stmt = prepare(mDB, sql, prepareCode);
+		rc = prepareCode[0];
 
-  public boolean executeUpdate(String sql) throws SQLiteException {
-    return executeUpdate(sql, (Object[]) null);
-  }
+		if (rc != SQLITE_OK || stmt == 0) {
+			throw new SQLiteException(rc, lastErrorMessage(mDB), sql);
+		}
 
-  public boolean executeUpdate(String sql, Map<String, Object> arguments) throws SQLiteException {
-    return executeUpdate(sql, null, arguments);
-  }
+		return new Statement(stmt);
+	}
 
-  public boolean executeUpdate(String sql, Object... arguments) throws SQLiteException {
-    return executeUpdate(sql, arguments == null ? null : asList(arguments));
-  }
+	public void execute(String sql) throws SQLiteException {
+		String[] errors = new String[1];
 
-  public boolean executeUpdate(String sql, List<Object> arguments) throws SQLiteException {
-    return executeUpdate(sql, arguments, null);
-  }
+		int rc = exec(mDB, sql, errors);
 
-  public ResultSet executeQuery(String sql) throws SQLiteException {
-    return executeQuery(sql, (Object[]) null);
-  }
+		if (rc != SQLITE_OK) {
+			throw new SQLiteException(rc, errors[0], sql);
+		}
 
-  public ResultSet executeQuery(String sql, Map<String, Object> arguments) throws SQLiteException {
-    return executeQuery(sql, null, arguments);
-  }
+		notifyListenerOnExecuteQuery(sql);
+	}
 
-  public ResultSet executeQuery(String sql, Object... arguments) throws SQLiteException {
-    return executeQuery(sql, arguments == null ? null : asList(arguments));
-  }
+	public boolean executeUpdate(String sql) throws SQLiteException {
+		return executeUpdate(sql, (Object[]) null);
+	}
 
-  public ResultSet executeQuery(String sql, List<Object> arguments) throws SQLiteException {
-    return executeQuery(sql, arguments, null);
-  }
+	public boolean executeUpdate(String sql, Map<String, Object> arguments) throws SQLiteException {
+		return executeUpdate(sql, null, arguments);
+	}
 
-  public long getLastInsertId() {
-    return lastInsertId(mDB);
-  }
+	public boolean executeUpdate(String sql, Object... arguments) throws SQLiteException {
+		return executeUpdate(sql, arguments == null ? null : asList(arguments));
+	}
 
-  public String getLastErrorMessage() {
-    return lastErrorMessage(mDB);
-  }
+	public boolean executeUpdate(String sql, List<Object> arguments) throws SQLiteException {
+		return executeUpdate(sql, arguments, null);
+	}
 
-  /*
-  Use with native code.
-  sqlite3 *db = reinterpret_cast<sqlite3*>(jdb);
-   */
-  public long getSQLiteHandler() {
-    return mDB;
-  }
+	public ResultSet executeQuery(String sql) throws SQLiteException {
+		return executeQuery(sql, (Object[]) null);
+	}
 
-  public boolean close() throws SQLiteException {
-    int rc = close(mDB);
-    if (rc != SQLITE_OK) {
-      throw new SQLiteException(rc, lastErrorMessage(mDB));
-    }
+	public ResultSet executeQuery(String sql, Map<String, Object> arguments) throws SQLiteException {
+		return executeQuery(sql, null, arguments);
+	}
 
-    mDB = 0;
-    return true;
-  }
+	public ResultSet executeQuery(String sql, Object... arguments) throws SQLiteException {
+		return executeQuery(sql, arguments == null ? null : asList(arguments));
+	}
 
-  public boolean isClosed() {
-    return mDB == 0;
-  }
+	public ResultSet executeQuery(String sql, List<Object> arguments) throws SQLiteException {
+		return executeQuery(sql, arguments, null);
+	}
 
-  public boolean isOpen() {
-    return mDB > 0;
-  }
+	public long getLastInsertId() {
+		return lastInsertId(mDB);
+	}
 
-  public String getDatabasePath() {
-    return mPath;
-  }
-  //endregion
+	public String getLastErrorMessage() {
+		return lastErrorMessage(mDB);
+	}
 
-  //region Private
-  private boolean executeUpdate(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-    Statement statement = compileStatement(sql, listArgs, mapArgs);
+	/*
+	Use with native code.
+	sqlite3 *db = reinterpret_cast<sqlite3*>(jdb);
+	 */
+	public long getSQLiteHandler() {
+		return mDB;
+	}
 
-    int rc = statement.step();
+	public boolean close() throws SQLiteException {
+		int rc = close(mDB);
+		if (rc != SQLITE_OK) {
+			throw new SQLiteException(rc, lastErrorMessage(mDB));
+		}
 
-    statement.close();
+		mDB = 0;
+		return true;
+	}
 
-    if (rc != SQLITE_DONE) {
-      throw new SQLiteException(rc, getLastErrorMessage(), sql);
-    }
+	public boolean isClosed() {
+		return mDB == 0;
+	}
 
-    notifyListenerOnExecuteQuery(sql);
+	public boolean isOpen() {
+		return mDB > 0;
+	}
 
-    return true;
-  }
+	public String getDatabasePath() {
+		return mPath;
+	}
+	//endregion
 
-  private ResultSet executeQuery(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-    ResultSet rs = new ResultSet(this, compileStatement(query, listArgs, mapArgs));
+	//region Private
+	private boolean executeUpdate(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
+		Statement statement = compileStatement(sql, listArgs, mapArgs);
 
-    notifyListenerOnExecuteQuery(query);
+		int rc = statement.step();
 
-    return rs;
-  }
+		statement.close();
 
-  private void notifyListenerOnExecuteQuery(String sql) {
-    if (mDatabaseListener != null) {
-      mDatabaseListener.onExecuteQuery(sql);
-    }
-  }
+		if (rc != SQLITE_DONE) {
+			throw new SQLiteException(rc, getLastErrorMessage(), sql);
+		}
 
-  private Statement compileStatement(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-    Statement statement = prepareStatement(query);
+		notifyListenerOnExecuteQuery(sql);
 
-    int rc, index = 1, bindsCount = statement.getBindParameterCount() + 1;
+		return true;
+	}
 
-    if (mapArgs != null && mapArgs.size() > 0) {
-      String parameterName;
-      int parameterIndex;
+	private ResultSet executeQuery(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
+		ResultSet rs = new ResultSet(this, compileStatement(query, listArgs, mapArgs));
 
-      for (String key : mapArgs.keySet()) {
-        parameterName = ":" + key;
+		notifyListenerOnExecuteQuery(query);
 
-        if ((parameterIndex = statement.getParameterIndex(parameterName)) > 0) {
-          statement.bindObject(parameterIndex, mapArgs.get(key));
-          index++;
-        }
-      }
-    } else if (listArgs != null && listArgs.size() > 0) {
-      for (Object object : listArgs) {
-        statement.bindObject(index++, object);
-      }
-    }
+		return rs;
+	}
 
-    if (index != bindsCount) {
-      rc = statement.close();
-      if (rc != SQLITE_OK) {
-        throw new SQLiteException(rc, lastErrorMessage(mDB));
-      }
+	private void notifyListenerOnExecuteQuery(String sql) {
+		if (mDatabaseListener != null) {
+			mDatabaseListener.onExecuteQuery(sql);
+		}
+	}
 
-      throw new SQLiteException(SQLITE_MISUSE, "The bind count is not correct for the number of variables", query);
-    }
+	private Statement compileStatement(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
+		Statement statement = prepareStatement(query);
 
-    return statement;
-  }
-  //endregion
+		int rc, index = 1, bindsCount = statement.getBindParameterCount() + 1;
 
-  //region Getters and Setters
-  public DatabaseListener getDatabaseListener() {
-    return mDatabaseListener;
-  }
+		if (mapArgs != null && mapArgs.size() > 0) {
+			String parameterName;
+			int parameterIndex;
 
-  public void setDatabaseListener(DatabaseListener databaseListener) {
-    mDatabaseListener = databaseListener;
-  }
-  //endregion
+			for (String key : mapArgs.keySet()) {
+				parameterName = ":" + key;
 
-  public interface DatabaseListener {
-    public void onExecuteQuery(String query);
-  }
+				if ((parameterIndex = statement.getParameterIndex(parameterName)) > 0) {
+					statement.bindObject(parameterIndex, mapArgs.get(key));
+					index++;
+				}
+			}
+		} else if (listArgs != null && listArgs.size() > 0) {
+			for (Object object : listArgs) {
+				statement.bindObject(index++, object);
+			}
+		}
+
+		if (index != bindsCount) {
+			rc = statement.close();
+			if (rc != SQLITE_OK) {
+				throw new SQLiteException(rc, lastErrorMessage(mDB));
+			}
+
+			throw new SQLiteException(SQLITE_MISUSE, "The bind count is not correct for the number of variables", query);
+		}
+
+		return statement;
+	}
+	//endregion
+
+	//region Getters and Setters
+	public DatabaseListener getDatabaseListener() {
+		return mDatabaseListener;
+	}
+
+	public void setDatabaseListener(DatabaseListener databaseListener) {
+		mDatabaseListener = databaseListener;
+	}
+	//endregion
+
+	public interface DatabaseListener {
+		public void onExecuteQuery(String query);
+	}
 }
