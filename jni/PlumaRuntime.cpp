@@ -7,7 +7,7 @@
 #define assertion(expression, msg) if (!(expression)) jniThrowRuntimeException(msg);
 
 JNIEnv *PlumaRuntime::getJNIEnv() const {
-	JavaVM* vm = getJavaVM();
+	JavaVM *vm = getJavaVM();
 
 	assertion(vm != nullptr, "JavaVM is null")
 
@@ -15,7 +15,7 @@ JNIEnv *PlumaRuntime::getJNIEnv() const {
 }
 
 void PlumaRuntime::jniThrowException(string className, string msg) {
-	JNIEnv* jenv = PlumaRuntime::getJNIEnv();
+	JNIEnv *jenv = PlumaRuntime::getJNIEnv();
 
 	jclass javaClass = findClassOrDie(className);
 	jmethodID constructor = findMethodOrDie(javaClass, "<init>", "(Ljava/lang/String;)V");
