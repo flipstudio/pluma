@@ -5,8 +5,6 @@
 #ifndef PLUMA_PLUMARUNTIME_H
 #define PLUMA_PLUMARUNTIME_H
 
-
-#include <JavaVM/JavaVM.h>
 #include <jni.h>
 #include <string>
 
@@ -14,30 +12,24 @@ using namespace std;
 
 class PlumaRuntime {
 public:
-	static JavaVM *getJavaVM() const {
-		return mJavaVM;
+	PlumaRuntime(JNIEnv* JNIEnv) : mJNIEnv(JNIEnv) { }
+
+	JNIEnv* getJNIEnv() const {
+		return mJNIEnv;
 	}
 
-	static void loadVM(JavaVM* javaVM) {
-		mJavaVM = javaVM;
-	}
+	void jniThrowException(const char* className, const char* msg);
 
-	static JNIEnv *getJNIEnv() const;
+	void jniThrowRuntimeException(const char* msg);
 
-	static inline void jniThrowException(string className, string msg);
+	jclass findClassOrDie(const char* className);
 
-	static inline void jniThrowRuntimeException(string msg);
+	jfieldID findFieldOrDie(jclass javaClass, const char* fieldName, const char* fieldSignature);
 
-	static inline jclass findClassOrDie(string className);
-
-	static inline jfieldID findFieldOrDie(jclass javaClass, string fieldName, string fieldSignature);
-
-	static inline jmethodID findMethodOrDie(jclass javaClass, string methodName, string methodSignature);
+	jmethodID findMethodOrDie(jclass javaClass, const char* methodName, const char* methodSignature);
 
 private:
-	static JavaVM *mJavaVM;
-
-	PlumaRuntime() { };
+	JNIEnv *mJNIEnv;
 };
 
 

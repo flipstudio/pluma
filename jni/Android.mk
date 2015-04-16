@@ -8,6 +8,6 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := pluma
-LOCAL_SRC_FILES := database.cpp statement.cpp
+LOCAL_SRC_FILES := database.cpp statement.cpp PlumaRuntime.cpp
 LOCAL_SHARED_LIBRARIES := sqlite3-prebuilt
 include $(BUILD_SHARED_LIBRARY)

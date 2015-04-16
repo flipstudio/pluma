@@ -8,29 +8,31 @@ static struct {
 	jmethodID dispatchCallback;
 } CustomFunctionClassInfo;
 
+static PlumaRuntime* plumaRuntime = nullptr;
+
 static void sqliteCustomFunctionDestructor(void *data) {
 	jobject function = reinterpret_cast<jobject>(data);
 
-	PlumaRuntime::getJNIEnv()->DeleteGlobalRef(function);
+	plumaRuntime->getJNIEnv()->DeleteGlobalRef(function);
 }
 
 static void sqliteCustomFunctionCallback(sqlite3_context* context, int argc, sqlite3_value** argv) {
-	JNIEnv *env = PlumaRuntime::getJNIEnv();
+	JNIEnv *env = plumaRuntime->getJNIEnv();
 
 	jobject functionGlobal = reinterpret_cast<jobject>(sqlite3_user_data(context));
 	jobject functionObj = env->NewGlobalRef(functionGlobal);
 
-	jobjectArray argsArray = env->NewObjectArray(argc, PlumaRuntime::findClassOrDie("java/lang/String"), nullptr);
+	jobjectArray argsArray = env->NewObjectArray(argc, plumaRuntime->findClassOrDie("java/lang/String"), nullptr);
 	if (argsArray) {
 		for (int i = 0; i < argc; i++) {
 			const jchar* arg = static_cast<const jchar*>(sqlite3_value_text16(argv[i]));
 			if (!arg) {
-				PlumaRuntime::jniThrowRuntimeException("NULL argument in custom_function_callback.  This should not happen.");
+				plumaRuntime->jniThrowRuntimeException("NULL argument in custom_function_callback.  This should not happen.");
 			} else {
 				size_t argLen = sqlite3_value_bytes16(argv[i]) / sizeof(jchar);
 				jstring argStr = env->NewString(arg, argLen);
 				if (!argStr) {
-					PlumaRuntime::jniThrowRuntimeException("Out of memory!");
+					plumaRuntime->jniThrowRuntimeException("Out of memory!");
 				}
 
 				env->SetObjectArrayElement(argsArray, i, argStr);
@@ -47,11 +49,11 @@ static void sqliteCustomFunctionCallback(sqlite3_context* context, int argc, sql
 }
 
 void registerCustomFunctionClass() {
-	jclass clazz = PlumaRuntime::findClassOrDie("com/flipstudio/pluma/CustomFunction");
+	jclass clazz = plumaRuntime->findClassOrDie("com/flipstudio/pluma/CustomFunction");
 
-	CustomFunctionClassInfo.name = PlumaRuntime::findFieldOrDie(clazz, "mName", "Ljava/lang/String;");
-	CustomFunctionClassInfo.numArgs = PlumaRuntime::findFieldOrDie(clazz, "mNumArgs", "I");
-	CustomFunctionClassInfo.dispatchCallback = PlumaRuntime::findMethodOrDie(clazz, "dispatchCallback", "[Ljava/lang/String;)V");
+	CustomFunctionClassInfo.name = plumaRuntime->findFieldOrDie(clazz, "mName", "Ljava/lang/String;");
+	CustomFunctionClassInfo.numArgs = plumaRuntime->findFieldOrDie(clazz, "mNumArgs", "I");
+	CustomFunctionClassInfo.dispatchCallback = plumaRuntime->findMethodOrDie(clazz, "dispatchCallback", "[Ljava/lang/String;)V");
 }
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -60,7 +62,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 		return -1;
 	}
 
-	PlumaRuntime::loadVM(vm);
+	plumaRuntime = new PlumaRuntime(env);
 
 	registerCustomFunctionClass();
 
@@ -202,6 +204,6 @@ JNIEXPORT void JNICALL Java_com_flipstudio_pluma_Database_registerFunction
 
 	if (rc != SQLITE_OK) {
 		jenv->DeleteGlobalRef(function);
-		PlumaRuntime::jniThrowRuntimeException("sqlite3_create_function returned " + rc);
+		plumaRuntime->jniThrowRuntimeException(strcat((char*) "sqlite3_create_function returned ", std::to_string(rc).c_str()));
 	}
 }

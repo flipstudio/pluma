@@ -14,7 +14,8 @@ set(SOURCE_FILES
     jni/database.h
     jni/statement.cpp
     jni/statement.h
-    jni/utils.h)
+    jni/PlumaRuntime.cpp
+    jni/PlumaRuntime.h)
 
 link_libraries(${SQLITE_PATH}/libs/mac/libsqlite.jnilib)
 
