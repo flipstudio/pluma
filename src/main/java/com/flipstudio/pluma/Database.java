@@ -51,6 +51,8 @@ public final class Database {
 	private native String lastErrorMessage(long db);
 
 	private native void setTempDir(String tempDir);
+
+	private native void registerFunction(long db, CustomFunction function);
 	//endregion
 
 	//region Public
@@ -175,6 +177,10 @@ public final class Database {
 
 	public String getDatabasePath() {
 		return mPath;
+	}
+
+	public void registerFunction(CustomFunction function) {
+		registerFunction(mDB, function);
 	}
 	//endregion
 
