@@ -1,59 +1,13 @@
 #include "database.h"
 #include "PlumaRuntime.h"
+#include "SQLiteFunction.h"
+#include <string>
 #include <sqlite3.h>
 
-static struct {
-	jfieldID name;
-	jfieldID numArgs;
-	jmethodID dispatchCallback;
-} CustomFunctionClassInfo;
+static void sqliteFunctionCallback(sqlite3_context* context, int argc, sqlite3_value** argv) {
+	SQLiteFunction* function = reinterpret_cast<SQLiteFunction*>(sqlite3_user_data(context));
 
-static PlumaRuntime* plumaRuntime = nullptr;
-
-static void sqliteCustomFunctionDestructor(void *data) {
-	jobject function = reinterpret_cast<jobject>(data);
-
-	plumaRuntime->getJNIEnv()->DeleteGlobalRef(function);
-}
-
-static void sqliteCustomFunctionCallback(sqlite3_context* context, int argc, sqlite3_value** argv) {
-	JNIEnv *env = plumaRuntime->getJNIEnv();
-
-	jobject functionGlobal = reinterpret_cast<jobject>(sqlite3_user_data(context));
-	jobject functionObj = env->NewGlobalRef(functionGlobal);
-
-	jobjectArray argsArray = env->NewObjectArray(argc, plumaRuntime->findClassOrDie("java/lang/String"), nullptr);
-	if (argsArray) {
-		for (int i = 0; i < argc; i++) {
-			const jchar* arg = static_cast<const jchar*>(sqlite3_value_text16(argv[i]));
-			if (!arg) {
-				plumaRuntime->jniThrowRuntimeException("NULL argument in custom_function_callback.  This should not happen.");
-			} else {
-				size_t argLen = sqlite3_value_bytes16(argv[i]) / sizeof(jchar);
-				jstring argStr = env->NewString(arg, argLen);
-				if (!argStr) {
-					plumaRuntime->jniThrowRuntimeException("Out of memory!");
-				}
-
-				env->SetObjectArrayElement(argsArray, i, argStr);
-				env->DeleteLocalRef(argStr);
-			}
-		}
-
-		env->CallVoidMethod(functionObj, CustomFunctionClassInfo.dispatchCallback, argsArray);
-
-		env->DeleteLocalRef(argsArray);
-	}
-
-	env->DeleteLocalRef(functionObj);
-}
-
-void registerCustomFunctionClass() {
-	jclass clazz = plumaRuntime->findClassOrDie("com/flipstudio/pluma/CustomFunction");
-
-	CustomFunctionClassInfo.name = plumaRuntime->findFieldOrDie(clazz, "mName", "Ljava/lang/String;");
-	CustomFunctionClassInfo.numArgs = plumaRuntime->findFieldOrDie(clazz, "mNumArgs", "I");
-	CustomFunctionClassInfo.dispatchCallback = plumaRuntime->findMethodOrDie(clazz, "dispatchCallback", "[Ljava/lang/String;)V");
+	function->run(context, argc, argv);
 }
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -62,9 +16,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 		return -1;
 	}
 
-	plumaRuntime = new PlumaRuntime(env);
-
-	registerCustomFunctionClass();
+	PlumaRuntime::getRuntime()->init(env);
 
 	return JNI_VERSION_1_6;
 }
@@ -186,24 +138,17 @@ JNIEXPORT void JNICALL Java_com_flipstudio_pluma_Database_setTempDir
 	sqlite3_temp_directory = (char *) jenv->GetStringUTFChars(jtmpDir, 0);
 }
 
-JNIEXPORT void JNICALL Java_com_flipstudio_pluma_Database_registerFunction
-		(JNIEnv *jenv, jobject thiz, jlong jdb, jobject jfunctionObj) {
+JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_registerFunction
+		(JNIEnv *jenv, jobject jthiz, jlong jdb, jstring jname, jint jnumArgs, jlong jfunctionPtr) {
 	sqlite3 *db = reinterpret_cast<sqlite3 *>(jdb);
+	SQLiteFunction* function = reinterpret_cast<SQLiteFunction*>(jfunctionPtr);
 
-	jstring nameStr = jstring(jenv->GetObjectField(jfunctionObj, CustomFunctionClassInfo.name));
-	int numArgs = jenv->GetIntField(jfunctionObj, CustomFunctionClassInfo.numArgs);
+	const char *name = jenv->GetStringUTFChars(jname, nullptr);
 
-	jobject function = jenv->NewGlobalRef(jfunctionObj);
+	int rc = sqlite3_create_function_v2(db, name, jnumArgs, SQLITE_UTF16, function,
+																			&sqliteFunctionCallback, nullptr, nullptr, nullptr);
 
-	const char *name = jenv->GetStringUTFChars(nameStr, nullptr);
+	jenv->ReleaseStringUTFChars(jname, name);
 
-	int rc = sqlite3_create_function_v2(db, name, numArgs, SQLITE_UTF16, reinterpret_cast<void *>(function),
-																			&sqliteCustomFunctionCallback, nullptr, nullptr, &sqliteCustomFunctionDestructor);
-
-	jenv->ReleaseStringUTFChars(nameStr, name);
-
-	if (rc != SQLITE_OK) {
-		jenv->DeleteGlobalRef(function);
-		plumaRuntime->jniThrowRuntimeException(strcat((char*) "sqlite3_create_function returned ", std::to_string(rc).c_str()));
-	}
+	return rc;
 }

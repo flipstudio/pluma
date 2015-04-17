@@ -6,13 +6,12 @@
 #define PLUMA_PLUMARUNTIME_H
 
 #include <jni.h>
-#include <string>
-
-using namespace std;
 
 class PlumaRuntime {
 public:
-	PlumaRuntime(JNIEnv* JNIEnv) : mJNIEnv(JNIEnv) { }
+	static PlumaRuntime* getRuntime();
+
+	void init(JNIEnv*);
 
 	JNIEnv* getJNIEnv() const {
 		return mJNIEnv;
@@ -24,12 +23,16 @@ public:
 
 	jclass findClassOrDie(const char* className);
 
+	jclass findObjClassOrDie(jobject obj);
+
 	jfieldID findFieldOrDie(jclass javaClass, const char* fieldName, const char* fieldSignature);
 
 	jmethodID findMethodOrDie(jclass javaClass, const char* methodName, const char* methodSignature);
 
 private:
 	JNIEnv *mJNIEnv;
+
+	PlumaRuntime() { }
 };
 
 

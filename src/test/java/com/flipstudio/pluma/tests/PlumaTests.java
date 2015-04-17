@@ -3,6 +3,7 @@ package com.flipstudio.pluma.tests;
 import com.flipstudio.pluma.Database;
 import com.flipstudio.pluma.Pluma;
 import com.flipstudio.pluma.ResultSet;
+import com.flipstudio.pluma.SQLiteFunction;
 import com.flipstudio.pluma.Statement;
 import org.junit.Before;
 import org.junit.Test;
@@ -236,6 +237,32 @@ public class PlumaTests {
 		assertTrue("Could not close result set", rs.close());
 
 		assertEquals("Could not close statement", Pluma.SQLITE_OK, statement.close());
+	}
+	//endregion
+
+	//region Functions
+	@Test public void testFunctionFirstChar() throws Exception {
+		mDatabase.registerFunction("FIRST_CHAR", 1, new SQLiteFunction() {
+			@Override protected void run(int argc) {
+				if (argc == 1) {
+					final String text = getStringArg(0);
+					if (text != null && text.length() > 0) {
+						setStringResult(Character.toString(text.charAt(0)));
+						return;
+					}
+				}
+
+				setNullResult();
+			}
+		});
+
+		final ResultSet resultSet = mDatabase.executeQuery("SELECT FIRST_CHAR(name) FROM people");
+		final String[] strings = {"J", "D", "R"};
+		int index = 0;
+
+		while (resultSet.next()) {
+			assertEquals("Unexpected result.", strings[index++], resultSet.getString(0));
+		}
 	}
 	//endregion
 

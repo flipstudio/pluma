@@ -29,8 +29,8 @@ JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Database_lastErrorMessage
 JNIEXPORT void JNICALL Java_com_flipstudio_pluma_Database_setTempDir
 		(JNIEnv *, jobject, jstring);
 
-JNIEXPORT void JNICALL Java_com_flipstudio_pluma_Database_registerFunction
-		(JNIEnv *, jobject, jlong, jobject);
+JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_registerFunction
+		(JNIEnv *, jobject, jlong, jstring, jint, jlong);
 
 #ifdef __cplusplus
 }
