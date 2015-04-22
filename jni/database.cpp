@@ -4,7 +4,7 @@
 #include <string>
 #include <sqlite3.h>
 
-static void sqliteFunctionCallback(sqlite3_context* context, int argc, sqlite3_value** argv) {
+void sqliteFunctionCallback(sqlite3_context* context, int argc, sqlite3_value** argv) {
 	SQLiteFunction* function = reinterpret_cast<SQLiteFunction*>(sqlite3_user_data(context));
 
 	function->run(context, argc, argv);
@@ -16,7 +16,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 		return -1;
 	}
 
-	PlumaRuntime::getRuntime()->init(env);
+	PlumaRuntime::getRuntime()->init(vm);
 
 	return JNI_VERSION_1_6;
 }

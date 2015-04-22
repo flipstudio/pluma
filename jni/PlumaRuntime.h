@@ -11,10 +11,10 @@ class PlumaRuntime {
 public:
 	static PlumaRuntime* getRuntime();
 
-	void init(JNIEnv*);
+	void init(JavaVM*);
 
-	JNIEnv* getJNIEnv() const {
-		return mJNIEnv;
+	JavaVM* getJavaVM() const {
+		return mJavaVM;
 	}
 
 	void jniThrowException(const char* className, const char* msg);
@@ -29,8 +29,10 @@ public:
 
 	jmethodID findMethodOrDie(jclass javaClass, const char* methodName, const char* methodSignature);
 
+	JNIEnv* getJNIEnv();
+
 private:
-	JNIEnv *mJNIEnv;
+	JavaVM* mJavaVM;
 
 	PlumaRuntime() { }
 };
