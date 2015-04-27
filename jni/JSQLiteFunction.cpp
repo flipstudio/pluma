@@ -4,6 +4,7 @@
 JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_SQLiteFunction_init
 		(JNIEnv* jenv, jobject jthiz) {
 	SQLiteFunction* function = new SQLiteFunction(jthiz);
+
 	return reinterpret_cast<jlong>(function);
 }
 

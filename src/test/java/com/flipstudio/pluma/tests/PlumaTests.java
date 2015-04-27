@@ -3,6 +3,7 @@ package com.flipstudio.pluma.tests;
 import com.flipstudio.pluma.Database;
 import com.flipstudio.pluma.Pluma;
 import com.flipstudio.pluma.ResultSet;
+import com.flipstudio.pluma.SQLiteException;
 import com.flipstudio.pluma.SQLiteFunction;
 import com.flipstudio.pluma.Statement;
 import org.junit.Before;
@@ -263,6 +264,39 @@ public class PlumaTests {
 		while (resultSet.next()) {
 			assertEquals("Unexpected result.", strings[index++], resultSet.getString(0));
 		}
+	}
+
+	@Test public void testFunctionThread() throws Exception {
+		mDatabase.registerFunction("LAST_CHAR", 1, new SQLiteFunction() {
+			@Override protected void run(int argc) {
+				assertEquals("Unexpected thread", "PlumaTestThread", Thread.currentThread().getName());
+				if (argc == 1) {
+					final String text = getStringArg(0);
+					if (text != null && text.length() > 0) {
+						setStringResult(Character.toString(text.charAt(text.length() - 1)));
+						return;
+					}
+				}
+				setNullResult();
+			}
+		});
+
+		new Thread(new Runnable() {
+			@Override public void run() {
+				try {
+					final ResultSet rs = mDatabase.executeQuery("SELECT LAST_CHAR(name) FROM people");
+					final String[] strings = {"y", "n", "e"};
+					int index = 0;
+
+					while (rs.next()) {
+						assertEquals("Unexpected result.", strings[index++], rs.getString(0));
+					}
+
+				} catch (SQLiteException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}, "PlumaTestThread").start();
 	}
 	//endregion
 

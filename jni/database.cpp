@@ -1,5 +1,5 @@
 #include "database.h"
-#include "PlumaRuntime.h"
+#include "Utils.h"
 #include "SQLiteFunction.h"
 #include <string>
 #include <sqlite3.h>
@@ -16,7 +16,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 		return -1;
 	}
 
-	PlumaRuntime::getRuntime()->init(vm);
+	javaVM = vm;
 
 	return JNI_VERSION_1_6;
 }
@@ -141,6 +141,7 @@ JNIEXPORT void JNICALL Java_com_flipstudio_pluma_Database_setTempDir
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Database_registerFunction
 		(JNIEnv *jenv, jobject jthiz, jlong jdb, jstring jname, jint jnumArgs, jlong jfunctionPtr) {
 	sqlite3 *db = reinterpret_cast<sqlite3 *>(jdb);
+
 	SQLiteFunction* function = reinterpret_cast<SQLiteFunction*>(jfunctionPtr);
 
 	const char *name = jenv->GetStringUTFChars(jname, nullptr);

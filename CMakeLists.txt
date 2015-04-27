@@ -14,13 +14,13 @@ set(SOURCE_FILES
     jni/database.h
     jni/statement.cpp
     jni/statement.h
-    jni/PlumaRuntime.cpp
-    jni/PlumaRuntime.h
     jni/JSQLiteFunction.cpp
     jni/JSQLiteFunction.h
     jni/SQLiteFunction.cpp
-    jni/SQLiteFunction.h)
+    jni/SQLiteFunction.h
+    jni/Utils.cpp
+    jni/Utils.h)
 
 link_libraries(${SQLITE_PATH}/libs/mac/libsqlite.jnilib)
 
-add_library(Pluma SHARED ${SOURCE_FILES} jni/PlumaRuntime.cpp jni/PlumaRuntime.h jni/SQLiteFunction.cpp jni/JSQLiteFunction.cpp jni/SQLiteFunction.cpp jni/SQLiteFunction.h)
+add_library(Pluma SHARED ${SOURCE_FILES} jni/Utils.cpp jni/Utils.h jni/SQLiteFunction.cpp jni/JSQLiteFunction.cpp jni/SQLiteFunction.cpp jni/SQLiteFunction.h jni/Utils.h jni/Utils.cpp jni/Utils.cpp jni/Utils.h jni/Utils.cpp)
