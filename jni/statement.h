@@ -9,58 +9,58 @@ extern "C" {
 #endif
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bind__JII
-(JNIEnv *, jobject, jlong, jint, jint);
+		(JNIEnv *, jobject, jlong, jint, jint);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bind__JIJ
-(JNIEnv *, jobject, jlong, jint, jlong);
+		(JNIEnv *, jobject, jlong, jint, jlong);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bind__JID
-(JNIEnv *, jobject, jlong, jint, jdouble);
+		(JNIEnv *, jobject, jlong, jint, jdouble);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bind__JILjava_lang_String_2
-(JNIEnv *, jobject, jlong, jint, jstring);
+		(JNIEnv *, jobject, jlong, jint, jstring);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bindNull
-(JNIEnv *, jobject, jlong, jint);
+		(JNIEnv *, jobject, jlong, jint);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_getInt
-(JNIEnv *, jobject, jlong, jint);
+		(JNIEnv *, jobject, jlong, jint);
 
 JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Statement_getLong
-(JNIEnv *, jobject, jlong, jint);
+		(JNIEnv *, jobject, jlong, jint);
 
 JNIEXPORT jdouble JNICALL Java_com_flipstudio_pluma_Statement_getDouble
-(JNIEnv *, jobject, jlong, jint);
+		(JNIEnv *, jobject, jlong, jint);
 
 JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Statement_getText
-(JNIEnv *, jobject, jlong, jint);
+		(JNIEnv *, jobject, jlong, jint);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_getColumnType
-(JNIEnv *, jobject, jlong, jint);
+		(JNIEnv *, jobject, jlong, jint);
 
 JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Statement_getColumnName
-(JNIEnv *, jobject, jlong, jint);
+		(JNIEnv *, jobject, jlong, jint);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bindParameterCount
-(JNIEnv *, jobject, jlong);
+		(JNIEnv *, jobject, jlong);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_bindParameterIndex
-(JNIEnv *, jobject, jlong, jstring);
+		(JNIEnv *, jobject, jlong, jstring);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_getColumnCount
-(JNIEnv *, jobject, jlong);
+		(JNIEnv *, jobject, jlong);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_step
-(JNIEnv *, jobject, jlong);
+		(JNIEnv *, jobject, jlong);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_clearBindings
-(JNIEnv *, jobject, jlong);
+		(JNIEnv *, jobject, jlong);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_reset
-(JNIEnv *, jobject, jlong);
+		(JNIEnv *, jobject, jlong);
 
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_finalize
-(JNIEnv *, jobject, jlong);
+		(JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }

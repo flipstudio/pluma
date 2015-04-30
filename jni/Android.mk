@@ -2,12 +2,12 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := sqlite3-prebuilt
-LOCAL_SRC_FILES := ../../SQLite/libs/$(TARGET_ARCH_ABI)/libsqlite.so
+LOCAL_SRC_FILES := ../../SQLite/libs/$(TARGET_ARCH_ABI)/libfsqlite.so
 LOCAL_EXPORT_C_INCLUDES := ../SQLite/jni
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := pluma
-LOCAL_SRC_FILES := database.cpp statement.cpp
+LOCAL_SRC_FILES := database.cpp statement.cpp Utils.cpp SQLiteFunction.cpp JSQLiteFunction.cpp
 LOCAL_SHARED_LIBRARIES := sqlite3-prebuilt
 include $(BUILD_SHARED_LIBRARY)

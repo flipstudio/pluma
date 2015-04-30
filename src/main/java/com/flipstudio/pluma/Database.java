@@ -51,6 +51,8 @@ public final class Database {
 	private native String lastErrorMessage(long db);
 
 	private native void setTempDir(String tempDir);
+
+	private native int registerFunction(long db, String name, int numArgs, long functionPtr);
 	//endregion
 
 	//region Public
@@ -176,6 +178,13 @@ public final class Database {
 	public String getDatabasePath() {
 		return mPath;
 	}
+
+	public void registerFunction(String name, int numArgs, SQLiteFunction function) throws SQLiteException {
+		final int rc = registerFunction(mDB, name, numArgs, function.getNativeHandler());
+		if (rc != SQLITE_OK) {
+			throw new SQLiteException(rc, lastErrorMessage(mDB));
+		}
+	}
 	//endregion
 
 	//region Private
@@ -256,6 +265,6 @@ public final class Database {
 	//endregion
 
 	public interface DatabaseListener {
-		public void onExecuteQuery(String query);
+		void onExecuteQuery(String query);
 	}
 }
