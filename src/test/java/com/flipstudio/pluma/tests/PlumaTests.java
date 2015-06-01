@@ -329,4 +329,14 @@ public class PlumaTests {
 		QUERIES.add(query);
 	}
 	//endregion
+
+	//region FTS
+	@Test public void testCreateTable() throws Exception {
+		String sql = "CREATE VIRTUAL TABLE _ftsProduct USING fts4(name, price, quantity, clientId, notindexed=clientId, tokenize=character)";
+
+		boolean result = mDatabase.executeUpdate(sql);
+
+		assertTrue("Can create virtual table.", result);
+	}
+	//endregion
 }
