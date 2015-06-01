@@ -8,6 +8,7 @@ import static com.flipstudio.pluma.Pluma.SQLITE_DONE;
 import static com.flipstudio.pluma.Pluma.SQLITE_MISUSE;
 import static com.flipstudio.pluma.Pluma.SQLITE_OK;
 import static com.flipstudio.pluma.Pluma.SQLITE_OPEN_CREATE;
+import static com.flipstudio.pluma.Pluma.SQLITE_OPEN_FULLMUTEX;
 import static com.flipstudio.pluma.Pluma.SQLITE_OPEN_READWRITE;
 import static java.util.Arrays.asList;
 
@@ -57,7 +58,7 @@ public final class Database {
 
 	//region Public
 	public void open() throws SQLiteException {
-		open(SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE);
+		open(SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX);
 	}
 
 	public void open(int flags) throws SQLiteException {

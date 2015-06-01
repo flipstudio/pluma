@@ -1,0 +1,3 @@
+[submodule "jni/SQLite"]
+	path = jni/SQLite
+	url = git@bitbucket.org:flipstudio/c-sqlite.git
