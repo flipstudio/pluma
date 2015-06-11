@@ -22,8 +22,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 	return JNI_VERSION_1_6;
 }
 
-void registerTokenizer(const sqlite3_tokenizer_module *module, sqlite3 *handle, const char *tokenName)
-{
+void registerTokenizer(const sqlite3_tokenizer_module *module, sqlite3 *handle, const char *tokenName){
 	sqlite3_stmt *pStmt;
     const char *tokenSQL = "SELECT fts3_tokenizer(?, ?)";
 
