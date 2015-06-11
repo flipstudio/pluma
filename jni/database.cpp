@@ -1,8 +1,9 @@
 #include "database.h"
 #include "Utils.h"
 #include "SQLiteFunction.h"
-#include <string>
 #include <sqlite3.h>
+#include "character_tokenizer.h"
+#include "fts3_tokenizer.h"
 
 void sqliteFunctionCallback(sqlite3_context* context, int argc, sqlite3_value** argv) {
 	SQLiteFunction* function = reinterpret_cast<SQLiteFunction*>(sqlite3_user_data(context));
@@ -21,6 +22,18 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 	return JNI_VERSION_1_6;
 }
 
+void registerTokenizer(const sqlite3_tokenizer_module *module, sqlite3 *handle, const char *tokenName){
+	sqlite3_stmt *pStmt;
+    const char *tokenSQL = "SELECT fts3_tokenizer(?, ?)";
+
+    sqlite3_prepare_v2(handle, tokenSQL, -1, &pStmt, 0);
+
+    sqlite3_bind_text(pStmt, 1, tokenName, -1, nullptr);
+    sqlite3_bind_blob(pStmt, 2, &module, sizeof(module), nullptr);
+    sqlite3_step(pStmt);
+    sqlite3_finalize(pStmt);
+}
+
 JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_open
 		(JNIEnv *jenv, jobject thiz, jstring jfilepath, jint jflags, jintArray jCodeArray, jobjectArray jErrorArray) {
 	const char *dbPath;
@@ -36,6 +49,11 @@ JNIEXPORT jlong JNICALL Java_com_flipstudio_pluma_Database_open
 
 	if (rc == SQLITE_OK) {
 		result = reinterpret_cast<jlong>(db);
+
+		const sqlite3_tokenizer_module *module;
+
+		get_character_tokenizer_module(&module);
+		registerTokenizer(module, db, "character");
 	}
 	else {
 		result = 0;
