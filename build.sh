@@ -3,11 +3,16 @@
 rm -rf obj/ libs/
 ndk-build clean
 ndk-build
-mkdir -p obj/local/osx
-mkdir -p libs/osx
-echo "Building Cmake"
-cd libs/osx
+
+PLATFORM='unknown'
+if [[ "$(uname)" == 'Darwin' ]]; then
+   PLATFORM='osx'
+else
+   PLATFORM='unix'
+fi
+
+mkdir -p libs/$PLATFORM
+cd libs/$PLATFORM
 cmake ../../
-cd ../..
-cmake --build libs/osx/ --target all
-echo "Cmake ok"
+cd ../../
+cmake --build libs/$PLATFORM --target all

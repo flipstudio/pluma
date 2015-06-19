@@ -5,9 +5,27 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(CMAKE_BUILD_TYPE Release)
 
-include_directories(/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/System/Library/Frameworks/JavaVM.framework/Headers/)
+set(SQLITE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../SQLite)
 
-set(SQLITE_PATH jni/SQLite)
+if(APPLE)
+    if(TARGET pluma_static)
+    	link_libraries(${SQLITE_PATH}/libs/osx/libfsqlite.a)
+    else()
+    	link_libraries(${SQLITE_PATH}/libs/osx/libfsqlite.dylib)
+    endif()
+
+elseif(UNIX)
+    if(TARGET pluma_static)
+    	link_libraries(${SQLITE_PATH}/libs/unix/libfsqlite.a)
+    else()
+    	link_libraries(${SQLITE_PATH}/libs/unix/libfsqlite.so)
+	endif()
+else()
+    link_libraries(${SQLITE_PATH}/libs/win32/libfsqlite.dll)
+endif()
+
+find_package(JNI REQUIRED)
+include_directories(${JNI_INCLUDE_DIRS})
 
 set(SOURCE_FILES
     jni/database.cpp
@@ -24,10 +42,8 @@ set(SOURCE_FILES
     jni/character_tokenizer.h
     jni/fts3_tokenizer.h)
 
-link_directories(${SQLITE_PATH}/libs/osx/)
+add_library(pluma_shared SHARED ${SOURCE_FILES})
+add_library(pluma_static STATIC ${SOURCE_FILES})
 
-add_library(Pluma SHARED ${SOURCE_FILES})
-
-target_link_libraries(Pluma libfsqlite.dylib)
-
-set_target_properties(Pluma PROPERTIES OUTPUT_NAME pluma)
+set_target_properties(pluma_shared PROPERTIES OUTPUT_NAME pluma)
+set_target_properties(pluma_static PROPERTIES OUTPUT_NAME pluma)
