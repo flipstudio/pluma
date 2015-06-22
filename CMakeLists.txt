@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.2)
 project(pluma)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -26,6 +26,7 @@ endif()
 
 find_package(JNI REQUIRED)
 include_directories(${JNI_INCLUDE_DIRS})
+include_directories(${SQLITE_PATH}/jni)
 
 set(SOURCE_FILES
     jni/database.cpp

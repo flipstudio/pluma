@@ -6,9 +6,9 @@ import java.util.Date;
 import java.util.TreeMap;
 
 import static com.flipstudio.pluma.Pluma.SQLITE_BLOB;
-import static com.flipstudio.pluma.Pluma.SQLITE_ERROR;
 import static com.flipstudio.pluma.Pluma.SQLITE_FLOAT;
 import static com.flipstudio.pluma.Pluma.SQLITE_INTEGER;
+import static com.flipstudio.pluma.Pluma.SQLITE_MISUSE;
 import static com.flipstudio.pluma.Pluma.SQLITE_NULL;
 import static com.flipstudio.pluma.Pluma.SQLITE_OK;
 import static com.flipstudio.pluma.Pluma.SQLITE_TEXT;
@@ -22,12 +22,14 @@ public final class Statement {
 	//region Fields
 	private final int mColumnCount;
 	private final TreeMap<String, Integer> mColumnNameIndexes;
+	private final String mSQL;
 	private long mStmt;
 	//endregion
 
 	//region Constructors
-	Statement(long stmt) {
+	Statement(long stmt, String SQL) {
 		mStmt = stmt;
+		mSQL = SQL;
 		mColumnCount = getColumnCount(stmt);
 
 		mColumnNameIndexes = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
@@ -122,7 +124,7 @@ public final class Statement {
 		} else if (object instanceof BigInteger) {
 			rc = bind(index, ((BigInteger) object).longValue());
 		} else {
-			rc = SQLITE_ERROR;
+			rc = SQLITE_MISUSE;
 		}
 
 		return rc;
@@ -219,6 +221,10 @@ public final class Statement {
 		if (rc == SQLITE_OK) mStmt = 0;
 
 		return rc;
+	}
+
+	public String getSQL() {
+		return mSQL;
 	}
 	//endregion
 }

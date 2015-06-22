@@ -17,12 +17,14 @@ public final class ResultSet {
 	//region Fields
 	private final Statement mStatement;
 	private final Database mDatabase;
+	private final String mQuery;
 	//endregion
 
 	//region Constructors
-	ResultSet(Database database, Statement statement) {
+	ResultSet(Database database, Statement statement, String query) {
 		mDatabase = database;
 		mStatement = statement;
+		mQuery = query;
 	}
 	//endregion
 
@@ -100,6 +102,10 @@ public final class ResultSet {
 
 	public Object getObject(int columnIndex) {
 		return mStatement.getObject(columnIndex);
+	}
+
+	public String getQuery() {
+		return mQuery;
 	}
 	//endregion
 }
