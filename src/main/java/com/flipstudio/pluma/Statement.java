@@ -6,9 +6,9 @@ import java.util.Date;
 import java.util.TreeMap;
 
 import static com.flipstudio.pluma.Pluma.SQLITE_BLOB;
-import static com.flipstudio.pluma.Pluma.SQLITE_ERROR;
 import static com.flipstudio.pluma.Pluma.SQLITE_FLOAT;
 import static com.flipstudio.pluma.Pluma.SQLITE_INTEGER;
+import static com.flipstudio.pluma.Pluma.SQLITE_MISUSE;
 import static com.flipstudio.pluma.Pluma.SQLITE_NULL;
 import static com.flipstudio.pluma.Pluma.SQLITE_OK;
 import static com.flipstudio.pluma.Pluma.SQLITE_TEXT;
@@ -74,6 +74,8 @@ public final class Statement {
 	private native int clearBindings(long stmt);
 
 	private native int reset(long stmt);
+
+	private native String getSQL(long stmt);
 	//TODO getBlob()...
 	//endregion
 
@@ -122,7 +124,7 @@ public final class Statement {
 		} else if (object instanceof BigInteger) {
 			rc = bind(index, ((BigInteger) object).longValue());
 		} else {
-			rc = SQLITE_ERROR;
+			rc = SQLITE_MISUSE;
 		}
 
 		return rc;
@@ -219,6 +221,10 @@ public final class Statement {
 		if (rc == SQLITE_OK) mStmt = 0;
 
 		return rc;
+	}
+
+	public String getSQL() {
+		return getSQL(mStmt);
 	}
 	//endregion
 }

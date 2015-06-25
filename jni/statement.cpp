@@ -123,3 +123,9 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_finalize
 	sqlite3_stmt *stmt = reinterpret_cast<sqlite3_stmt *>(jstmt);
 	return sqlite3_finalize(stmt);
 }
+
+JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Statement_getSQL
+		(JNIEnv *jenv , jobject thiz, jlong jstmt) {
+	sqlite3_stmt *stmt = reinterpret_cast<sqlite3_stmt *>(jstmt);
+	return jenv->NewStringUTF(sqlite3_sql(stmt));
+}

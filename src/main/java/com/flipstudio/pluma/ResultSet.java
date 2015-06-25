@@ -101,5 +101,9 @@ public final class ResultSet {
 	public Object getObject(int columnIndex) {
 		return mStatement.getObject(columnIndex);
 	}
+
+	public String getSQL() {
+		return mStatement.getSQL();
+	}
 	//endregion
 }
