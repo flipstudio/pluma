@@ -62,6 +62,9 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_reset
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_finalize
 		(JNIEnv *, jobject, jlong);
 
+JNIEXPORT jstring JNICALL Java_com_flipstudio_pluma_Statement_getSQL
+		(JNIEnv *, jobject, jlong);
+
 #ifdef __cplusplus
 }
 #endif

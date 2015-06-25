@@ -22,6 +22,7 @@ import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -307,6 +308,20 @@ public class PlumaTests {
 		assertTrue("Can not close database.", mDatabase.close());
 
 		assertTrue("Database is not closed.", mDatabase.isClosed());
+	}
+	//endregion
+
+	//region Get SQL
+	@Test public void testGetSQL() throws Exception {
+		final Statement statement = mDatabase.prepareStatement("INSERT INTO people (name, lastName, birth) VALUES (?, ?, ?)");
+
+		assertEquals("Statement SQL does not match", "INSERT INTO people (name, lastName, birth) VALUES (?, ?, ?)", statement.getSQL());
+
+		ResultSet rs = mDatabase.executeQuery("SELECT name FROM people WHERE id = ?", 2);
+		assertEquals("ResultSet SQL does not match.", "SELECT name FROM people WHERE id = ?", rs.getSQL());
+
+		statement.close();
+		rs.close();
 	}
 	//endregion
 

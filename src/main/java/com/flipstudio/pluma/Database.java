@@ -95,7 +95,7 @@ public final class Database {
 			throw new SQLiteException(rc, lastErrorMessage(mDB), sql);
 		}
 
-		return new Statement(stmt, sql);
+		return new Statement(stmt);
 	}
 
 	public void execute(String sql) throws SQLiteException {
@@ -206,7 +206,7 @@ public final class Database {
 	}
 
 	private ResultSet executeQuery(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-		ResultSet rs = new ResultSet(this, compileStatement(query, listArgs, mapArgs), query);
+		ResultSet rs = new ResultSet(this, compileStatement(query, listArgs, mapArgs));
 
 		notifyListenerOnExecuteQuery(query);
 

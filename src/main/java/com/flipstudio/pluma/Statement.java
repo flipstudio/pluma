@@ -22,14 +22,12 @@ public final class Statement {
 	//region Fields
 	private final int mColumnCount;
 	private final TreeMap<String, Integer> mColumnNameIndexes;
-	private final String mSQL;
 	private long mStmt;
 	//endregion
 
 	//region Constructors
-	Statement(long stmt, String SQL) {
+	Statement(long stmt) {
 		mStmt = stmt;
-		mSQL = SQL;
 		mColumnCount = getColumnCount(stmt);
 
 		mColumnNameIndexes = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
@@ -76,6 +74,8 @@ public final class Statement {
 	private native int clearBindings(long stmt);
 
 	private native int reset(long stmt);
+
+	private native String getSQL(long stmt);
 	//TODO getBlob()...
 	//endregion
 
@@ -224,7 +224,7 @@ public final class Statement {
 	}
 
 	public String getSQL() {
-		return mSQL;
+		return getSQL(mStmt);
 	}
 	//endregion
 }
