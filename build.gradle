@@ -1,0 +1,22 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.6
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType(Test) {
+    systemProperty 'java.library.path', 'src/main/libs/'
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+jar.dependsOn sourcesJar
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+}

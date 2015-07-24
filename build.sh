@@ -1,8 +1,11 @@
 #!/bin/sh
 
-rm -rf obj/ libs/
-ndk-build clean
-ndk-build
+rm -rf build/ src/main/libs
+mkdir build/
+cd build
+
+ndk-build NDK_PROJECT_PATH=../src/main clean
+ndk-build NDK_PROJECT_PATH=../src/main
 
 PLATFORM='unknown'
 if [[ "$(uname)" == 'Darwin' ]]; then
@@ -11,8 +14,10 @@ else
    PLATFORM='unix'
 fi
 
-mkdir -p libs/$PLATFORM
-cd libs/$PLATFORM
-cmake ../../
-cd ../../
-cmake --build libs/$PLATFORM --target all
+mkdir -p local/$PLATFORM
+
+cd local/$PLATFORM
+cmake ../../../
+cd ../../../
+cmake --build build/local/$PLATFORM
+cp build/local/$PLATFORM/libpluma.* src/main/libs/
