@@ -1,4 +1,8 @@
 apply plugin: 'java'
+apply from: 'java.gradle'
+
+group = 'com.flipstudio.pluma'
+version = '1.0-RC'
 
 sourceCompatibility = 1.6
 
@@ -10,12 +14,11 @@ tasks.withType(Test) {
     systemProperty 'java.library.path', 'src/main/libs/'
 }
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allJava
+jar {
+    into('lib') {
+        from('src/main/libs/')
+    }
 }
-
-jar.dependsOn sourcesJar
 
 dependencies {
     testCompile 'junit:junit:4.12'
