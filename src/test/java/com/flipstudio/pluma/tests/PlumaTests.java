@@ -22,7 +22,6 @@ import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -33,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(JUnit4.class)
 public class PlumaTests {
 	//region Fields
-	private static final File DATABASE_FILE = new File(System.getProperty("user.dir"), "TestDB.sqlite");
+	private static final File DATABASE_FILE = new File(System.getProperty("user.dir") + "/src/test/resources", "TestDB.sqlite");
 	private static final ArrayList<String> QUERIES = new ArrayList<String>();
 	private Database mDatabase;
 	//endregion

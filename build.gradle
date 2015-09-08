@@ -1,0 +1,25 @@
+apply plugin: 'java'
+apply from: 'java.gradle'
+
+group = 'com.flipstudio.pluma'
+version = '1.0-RC'
+
+sourceCompatibility = 1.6
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType(Test) {
+    systemProperty 'java.library.path', 'src/main/libs/'
+}
+
+jar {
+    into('lib') {
+        from('src/main/libs/')
+    }
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+}

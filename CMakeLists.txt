@@ -7,19 +7,20 @@ set(CMAKE_BUILD_TYPE Release)
 
 set(SQLITE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../SQLite)
 
+set(JNI_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/main/jni)
+
 if(APPLE)
     if(TARGET pluma_static)
     	link_libraries(${SQLITE_PATH}/libs/osx/libfsqlite.a)
     else()
     	link_libraries(${SQLITE_PATH}/libs/osx/libfsqlite.dylib)
     endif()
-
 elseif(UNIX)
     if(TARGET pluma_static)
     	link_libraries(${SQLITE_PATH}/libs/unix/libfsqlite.a)
     else()
     	link_libraries(${SQLITE_PATH}/libs/unix/libfsqlite.so)
-	endif()
+		endif()
 else()
     link_libraries(${SQLITE_PATH}/libs/win32/libfsqlite.dll)
 endif()
@@ -29,19 +30,19 @@ include_directories(${JNI_INCLUDE_DIRS})
 include_directories(${SQLITE_PATH}/jni)
 
 set(SOURCE_FILES
-    jni/database.cpp
-    jni/database.h
-    jni/statement.cpp
-    jni/statement.h
-    jni/JSQLiteFunction.cpp
-    jni/JSQLiteFunction.h
-    jni/SQLiteFunction.cpp
-    jni/SQLiteFunction.h
-    jni/Utils.cpp
-    jni/Utils.h
-    jni/character_tokenizer.cpp
-    jni/character_tokenizer.h
-    jni/fts3_tokenizer.h)
+    ${JNI_PATH}/database.cpp
+    ${JNI_PATH}/database.h
+    ${JNI_PATH}/statement.cpp
+    ${JNI_PATH}/statement.h
+    ${JNI_PATH}/JSQLiteFunction.cpp
+    ${JNI_PATH}/JSQLiteFunction.h
+    ${JNI_PATH}/SQLiteFunction.cpp
+    ${JNI_PATH}/SQLiteFunction.h
+    ${JNI_PATH}/Utils.cpp
+    ${JNI_PATH}/Utils.h
+    ${JNI_PATH}/character_tokenizer.cpp
+    ${JNI_PATH}/character_tokenizer.h
+    ${JNI_PATH}/fts3_tokenizer.h)
 
 add_library(pluma_shared SHARED ${SOURCE_FILES})
 add_library(pluma_static STATIC ${SOURCE_FILES})
