@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(JUnit4.class)
 public class PlumaTests {
 	//region Fields
-	private static final File DATABASE_FILE = new File(System.getProperty("java.io.tmpdir"), "TestDjB.sqlite");
+	private static final File DATABASE_FILE = new File(System.getProperty("java.io.tmpdir"), "TestDB.sqlite");
 	private static final ArrayList<String> QUERIES = new ArrayList<String>();
 	private Database mDatabase;
 	//endregion
