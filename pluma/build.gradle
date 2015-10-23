@@ -1,0 +1,61 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.1'
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_6
+        targetCompatibility JavaVersion.VERSION_1_6
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets.main {
+        jni.srcDirs = []
+        jniLibs.srcDir 'src/main/libs'
+    }
+
+    task buildNative(type: Exec) {
+        def ndkDir = plugins.getPlugin('com.android.library').sdkHandler.ndkFolder
+        commandLine "$ndkDir/ndk-build", 'NDK_PROJECT_PATH='+ file('src/main').absolutePath
+    }
+
+    task cleanNative(type: Exec) {
+        def ndkDir = plugins.getPlugin('com.android.library').sdkHandler.ndkFolder
+        commandLine "$ndkDir/ndk-build", '-C', file('src/main').absolutePath, 'clean'
+
+    }
+
+    buildNative.dependsOn 'cleanNative'
+}
+
+tasks.withType(JavaCompile) {
+    publishTask -> publishTask.dependsOn buildNative
+}
+
+tasks.withType(Test) {
+    systemProperty 'java.library.path', 'src/test/resources/'
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+}

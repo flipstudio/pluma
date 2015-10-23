@@ -1,25 +1,19 @@
-apply plugin: 'java'
-apply from: 'java.gradle'
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-group = 'com.flipstudio.pluma'
-version = '1.0-RC'
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.1'
 
-sourceCompatibility = 1.6
-
-repositories {
-    mavenCentral()
-}
-
-tasks.withType(Test) {
-    systemProperty 'java.library.path', 'src/main/libs/'
-}
-
-jar {
-    into('lib') {
-        from('src/main/libs/')
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
     }
 }
 
-dependencies {
-    testCompile 'junit:junit:4.12'
+allprojects {
+    repositories {
+        jcenter()
+    }
 }
