@@ -110,6 +110,15 @@ public final class Database {
 		notifyListenerOnExecuteQuery(sql);
 	}
 
+	public void execute(String sql, DatabaseInteractionListener listener) throws SQLiteException {
+		final ResultSet resultSet = executeQuery(sql);
+		if (listener != null) {
+			while (resultSet.next()) {
+				listener.onInteract(resultSet);
+			}
+		}
+	}
+
 	public boolean executeUpdate(String sql) throws SQLiteException {
 		return executeUpdate(sql, (Object[]) null);
 	}
@@ -267,5 +276,9 @@ public final class Database {
 
 	public interface DatabaseListener {
 		void onExecuteQuery(String query);
+	}
+
+	public interface DatabaseInteractionListener {
+		void onInteract(ResultSet resultSet);
 	}
 }

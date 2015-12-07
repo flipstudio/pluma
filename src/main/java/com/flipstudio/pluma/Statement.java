@@ -97,6 +97,12 @@ public final class Statement {
 		return bind(mStmt, index, value);
 	}
 
+	public void bind(Object[] arguments) {
+		for (int i = 0; i < arguments.length; i++) {
+			bindObject(i + 1, arguments[i]);
+		}
+	}
+
 	public int bindNull(int index) {
 		return bindNull(mStmt, index);
 	}
