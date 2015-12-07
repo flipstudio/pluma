@@ -1,0 +1,48 @@
+apply plugin: 'maven-publish'
+
+
+def getS3Repository() {
+    "s3://maven.flipstudio.net/"
+}
+
+repositories {
+    maven {
+        url getS3Repository()
+        credentials(AwsCredentials) {
+            accessKey AWS_ACCESS_KEY
+            secretKey AWS_SECRET_KEY
+        }
+    }
+
+    jcenter()
+    mavenCentral()
+}
+
+publishing {
+    repositories {
+        maven {
+            url getS3Repository()
+            credentials(AwsCredentials) {
+                accessKey AWS_ACCESS_KEY
+                secretKey AWS_SECRET_KEY
+            }
+        }
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = GROUP
+            artifactId = ARTIFACT_ID
+            version = VERSION
+            from components.java
+
+            artifact sourcesJar {
+                classifier "sources"
+            }
+
+            artifact javadocJar {
+                classifier "javadoc"
+            }
+        }
+    }
+}
