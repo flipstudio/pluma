@@ -110,7 +110,7 @@ public final class Database {
 		notifyListenerOnExecuteQuery(sql);
 	}
 
-	public void execute(String sql, DatabaseInteractionListener listener) throws SQLiteException {
+	public void execute(String sql, DatabaseIteractionListener listener) throws SQLiteException {
 		final ResultSet resultSet = executeQuery(sql);
 		if (listener != null) {
 			while (resultSet.next()) {
@@ -278,7 +278,7 @@ public final class Database {
 		void onExecuteQuery(String query);
 	}
 
-	public interface DatabaseInteractionListener {
+	public interface DatabaseIteractionListener {
 		void onInteract(ResultSet resultSet);
 	}
 }
