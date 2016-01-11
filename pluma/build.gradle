@@ -8,19 +8,20 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
+apply from: 'android.gradle'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 21
+    buildToolsVersion '21.1.2'
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 22
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
     buildTypes {
         release {
@@ -57,5 +58,5 @@ tasks.withType(Test) {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.11'
 }
