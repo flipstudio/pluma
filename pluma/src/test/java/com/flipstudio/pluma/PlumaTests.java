@@ -310,6 +310,8 @@ public class PlumaTests {
 
 		statement.close();
 		rs.close();
+		int i = 13;
+		i++;
 	}
 	//endregion
 
