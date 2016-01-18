@@ -1,6 +1,5 @@
 apply plugin: 'maven-publish'
 
-
 def getS3Repository() {
     "s3://maven.flipstudio.net/"
 }
@@ -34,15 +33,7 @@ publishing {
             groupId = GROUP
             artifactId = ARTIFACT_ID
             version = VERSION
-            from components.java
-
-            artifact sourcesJar {
-                classifier "sources"
-            }
-
-            artifact javadocJar {
-                classifier "javadoc"
-            }
+            artifact("$buildDir/outputs/aar/pluma-release.aar")
         }
     }
 }
