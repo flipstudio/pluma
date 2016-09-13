@@ -20,7 +20,7 @@ public final class ResultSet {
 	//endregion
 
 	//region Constructors
-	ResultSet(Database database, Statement statement) {
+	public ResultSet(Database database, Statement statement) {
 		mDatabase = database;
 		mStatement = statement;
 	}
