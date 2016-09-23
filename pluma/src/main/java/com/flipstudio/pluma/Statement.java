@@ -103,7 +103,7 @@ public final class Statement {
 
 	public int bind(Object[] arguments, int end) {
 		int rc = SQLITE_OK;
-		for(int i = 0; i < end && rc == SQLITE_OK; ++i) {
+		for (int i = 0; i < end && rc == SQLITE_OK; ++i) {
 			rc = this.bindObject(i + 1, arguments[i]);
 		}
 		return rc;

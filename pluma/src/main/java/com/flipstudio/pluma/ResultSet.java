@@ -87,7 +87,7 @@ public final class ResultSet {
 	}
 
 	public Date getDate(int columnIndex) {
-		return new Date(getLong(columnIndex));
+		return new Date(getLong(columnIndex) * 1000L);
 	}
 
 	public BigDecimal getBigDecimal(int columnIndex) {
