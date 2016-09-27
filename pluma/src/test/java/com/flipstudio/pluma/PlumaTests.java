@@ -39,9 +39,9 @@ public class PlumaTests {
 
 		mDatabase.execute(
 				"CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, lastName text, birth datetime);\n"
-						+ "INSERT INTO people (name,lastName,birth) VALUES ('Jeremy','Xyla','1179129666000');\n"
-						+ "INSERT INTO people (name,lastName,birth) VALUES ('Damon','Althea','1029576914000');\n"
-						+ "INSERT INTO people (name,lastName,birth) VALUES ('Reese','Kalia','763347737000');");
+						+ "INSERT INTO people (name,lastName,birth) VALUES ('Jeremy','Xyla','1179129666');\n"
+						+ "INSERT INTO people (name,lastName,birth) VALUES ('Damon','Althea','1029576914');\n"
+						+ "INSERT INTO people (name,lastName,birth) VALUES ('Reese','Kalia','763347737');");
 
 		mDatabase.setDatabaseListener(new Database.DatabaseListener() {
 			@Override public void onExecuteQuery(String query) {
@@ -149,7 +149,7 @@ public class PlumaTests {
 	@Test public void testLastInsertId() throws Exception {
 		String insert = "INSERT INTO people (name, lastName, birth) VALUES (?, ?, ?)";
 
-		boolean result = mDatabase.executeUpdate(insert, "Carl", "Ifeoma", 757399978000L);
+		boolean result = mDatabase.executeUpdate(insert, "Carl", "Ifeoma", new Date(757399978000L));
 
 		assertTrue("Can not insert record.", result);
 
@@ -209,13 +209,13 @@ public class PlumaTests {
 
 		assertEquals("Could not bind first object", Pluma.SQLITE_OK, statement.bind(1, "Cecilia"));
 		assertEquals("Could not bind second object", Pluma.SQLITE_OK, statement.bind(2, "Marshall"));
-		assertEquals("Could not bind third object", Pluma.SQLITE_OK, statement.bind(3, 1419088806000L));
+		assertEquals("Could not bind third object", Pluma.SQLITE_OK, statement.bindObject(3, new Date(1419088806000L)));
 
 		assertEquals("Could not clear statement", Pluma.SQLITE_OK, statement.clearBindings());
 
 		assertEquals("Could not bind first object", Pluma.SQLITE_OK, statement.bind(1, "Ivory"));
 		assertEquals("Could not bind second object", Pluma.SQLITE_OK, statement.bind(2, "Mariko"));
-		assertEquals("Could not bind third object", Pluma.SQLITE_OK, statement.bind(3, 1421394493000L));
+		assertEquals("Could not bind third object", Pluma.SQLITE_OK, statement.bindObject(3, new Date(1421394493000L)));
 
 		assertEquals("Could not execute statement", Pluma.SQLITE_DONE, statement.step());
 

@@ -97,10 +97,16 @@ public final class Statement {
 		return bind(mStmt, index, value);
 	}
 
-	public void bind(Object[] arguments) {
-		for (int i = 0; i < arguments.length; i++) {
-			bindObject(i + 1, arguments[i]);
+	public int bind(Object[] arguments) {
+		return bind(arguments, arguments.length);
+	}
+
+	public int bind(Object[] arguments, int end) {
+		int rc = SQLITE_OK;
+		for (int i = 0; i < end && rc == SQLITE_OK; ++i) {
+			rc = this.bindObject(i + 1, arguments[i]);
 		}
+		return rc;
 	}
 
 	public int bindNull(int index) {
@@ -118,7 +124,7 @@ public final class Statement {
 		} else if (object instanceof Long) {
 			rc = bind(index, (Long) object);
 		} else if (object instanceof Date) {
-			rc = bind(index, ((Date) object).getTime());
+			rc = bind(index, ((Date) object).getTime() / 1000);
 		} else if (object instanceof Double) {
 			rc = bind(index, (Double) object);
 		} else if (object instanceof Float) {
