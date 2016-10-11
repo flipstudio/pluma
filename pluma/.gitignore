@@ -12,6 +12,7 @@ lint.xml
 *.pinfo
 *.gcno
 *.bar
+*.dylib
 gdbserver
 gdb.setup
 libs

@@ -1,5 +1,9 @@
 package com.flipstudio.pluma;
 
+import com.flipstudio.collections.Array;
+import com.flipstudio.collections.functions.Action0;
+import com.flipstudio.collections.functions.Func0;
+
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +27,8 @@ public final class Database {
 	private String mTempDir;
 	private long mDB;
 	private DatabaseListener mDatabaseListener;
+	private int mIsInTransaction;
+	private Array<Action0> mActions;
 	//endregion
 
 	//region Static
@@ -195,6 +201,74 @@ public final class Database {
 			throw new SQLiteException(rc, lastErrorMessage(mDB));
 		}
 	}
+
+	public void executeActionAfterCommit(Action0 action) {
+		if (!isInTransaction()) {
+			action.call();
+		} else {
+			if (mActions == null) mActions = new Array<>();
+			mActions.add(action);
+		}
+	}
+
+	public void beginTransaction() {
+		try {
+			executeUpdate("BEGIN");
+			mIsInTransaction++;
+		} catch (SQLiteException e) {
+			throw new RuntimeException(e.toString());
+		}
+	}
+
+	public void commitTransaction() {
+		try {
+			executeUpdate("COMMIT");
+			mIsInTransaction--;
+		} catch (SQLiteException e) {
+			throw new RuntimeException(e.toString());
+		}
+
+		if (!isInTransaction()) {
+			for (final Action0 action : mActions) {
+				action.call();
+			}
+		}
+	}
+
+	public void rollbackTransaction() {
+		try {
+			executeUpdate("ROLLBACK");
+			mIsInTransaction--;
+		} catch (SQLiteException e) {
+			throw new RuntimeException(e.toString());
+		}
+	}
+
+	public void executeWithinTransaction(Action0 action) {
+		try {
+			beginTransaction();
+			action.call();
+			commitTransaction();
+		} catch (Exception e) {
+			rollbackTransaction();
+			throw new RuntimeException(e.toString());
+		}
+	}
+
+	public Object executeWithinTransaction(Func0<Object> action) {
+		Object result;
+
+		try {
+			beginTransaction();
+			result = action.call();
+			commitTransaction();
+		} catch (Exception e) {
+			rollbackTransaction();
+			throw new RuntimeException(e.toString());
+		}
+
+		return result;
+	}
 	//endregion
 
 	//region Private
@@ -271,6 +345,10 @@ public final class Database {
 
 	public void setDatabaseListener(DatabaseListener databaseListener) {
 		mDatabaseListener = databaseListener;
+	}
+
+	public boolean isInTransaction() {
+		return mIsInTransaction > 0;
 	}
 	//endregion
 
