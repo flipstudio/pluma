@@ -41,6 +41,7 @@ public final class Database {
 	public Database(String path) {
 		mPath = path;
 		mTempDir = new File(path).getParent();
+		mActions = new Array<>();
 	}
 	//endregion
 
@@ -206,7 +207,6 @@ public final class Database {
 		if (!isInTransaction()) {
 			action.call();
 		} else {
-			if (mActions == null) mActions = new Array<>();
 			mActions.add(action);
 		}
 	}
@@ -232,6 +232,8 @@ public final class Database {
 			for (final Action0 action : mActions) {
 				action.call();
 			}
+
+			mActions.clear();
 		}
 	}
 
