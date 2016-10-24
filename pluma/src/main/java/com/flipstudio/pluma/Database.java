@@ -27,8 +27,8 @@ public final class Database {
 	private String mTempDir;
 	private long mDB;
 	private DatabaseListener mDatabaseListener;
-	private int mIsInTransaction;
-	private Array<Action0> mActions;
+	private int mTransactionCount;
+	private Array<Action0> mPendingActions;
 	//endregion
 
 	//region Static
@@ -41,7 +41,7 @@ public final class Database {
 	public Database(String path) {
 		mPath = path;
 		mTempDir = new File(path).getParent();
-		mActions = new Array<>();
+		mPendingActions = new Array<>();
 	}
 	//endregion
 
@@ -203,18 +203,18 @@ public final class Database {
 		}
 	}
 
-	public void executeActionAfterCommit(Action0 action) {
+	public void executeAfterCommit(Action0 action) {
 		if (!isInTransaction()) {
 			action.call();
 		} else {
-			mActions.add(action);
+			mPendingActions.add(action);
 		}
 	}
 
 	public void beginTransaction() {
 		try {
 			executeUpdate("BEGIN");
-			mIsInTransaction++;
+			mTransactionCount++;
 		} catch (SQLiteException e) {
 			throw new RuntimeException(e.toString());
 		}
@@ -223,24 +223,24 @@ public final class Database {
 	public void commitTransaction() {
 		try {
 			executeUpdate("COMMIT");
-			mIsInTransaction--;
+			mTransactionCount--;
 		} catch (SQLiteException e) {
 			throw new RuntimeException(e.toString());
 		}
 
 		if (!isInTransaction()) {
-			for (final Action0 action : mActions) {
+			for (final Action0 action : mPendingActions) {
 				action.call();
 			}
 
-			mActions.clear();
+			mPendingActions.clear();
 		}
 	}
 
 	public void rollbackTransaction() {
 		try {
 			executeUpdate("ROLLBACK");
-			mIsInTransaction--;
+			mTransactionCount--;
 		} catch (SQLiteException e) {
 			throw new RuntimeException(e.toString());
 		}
@@ -350,7 +350,7 @@ public final class Database {
 	}
 
 	public boolean isInTransaction() {
-		return mIsInTransaction > 0;
+		return mTransactionCount > 0;
 	}
 	//endregion
 
