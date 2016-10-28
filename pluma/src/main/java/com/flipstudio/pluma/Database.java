@@ -241,6 +241,8 @@ public final class Database {
 		try {
 			executeUpdate("ROLLBACK");
 			mTransactionCount--;
+
+			mPendingActions.clear();
 		} catch (SQLiteException e) {
 			throw new RuntimeException(e.toString());
 		}
