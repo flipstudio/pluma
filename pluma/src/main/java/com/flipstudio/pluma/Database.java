@@ -1,15 +1,11 @@
 package com.flipstudio.pluma;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.flipstudio.pluma.Pluma.SQLITE_DONE;
-import static com.flipstudio.pluma.Pluma.SQLITE_MISUSE;
-import static com.flipstudio.pluma.Pluma.SQLITE_OK;
-import static com.flipstudio.pluma.Pluma.SQLITE_OPEN_CREATE;
-import static com.flipstudio.pluma.Pluma.SQLITE_OPEN_FULLMUTEX;
-import static com.flipstudio.pluma.Pluma.SQLITE_OPEN_READWRITE;
+import static com.flipstudio.pluma.Pluma.*;
 import static java.util.Arrays.asList;
 
 /**
@@ -19,6 +15,8 @@ import static java.util.Arrays.asList;
  */
 public final class Database {
 	//region Fields
+	private static int MAX_CHACHED_STATEMENTS = 15;
+	private final LinkedHashMap<String, Statement> mStatementsCache;
 	private final String mPath;
 	private String mTempDir;
 	private long mDB;
@@ -35,6 +33,7 @@ public final class Database {
 	public Database(String path) {
 		mPath = path;
 		mTempDir = new File(path).getParent();
+		mStatementsCache = new LinkedHashMap<>(MAX_CHACHED_STATEMENTS);
 	}
 	//endregion
 
@@ -85,17 +84,28 @@ public final class Database {
 	}
 
 	public Statement prepareStatement(String sql) throws SQLiteException {
-		int[] prepareCode = new int[1];
-		int rc;
+		Statement statement = mStatementsCache.get(sql);
 
-		long stmt = prepare(mDB, sql, prepareCode);
-		rc = prepareCode[0];
+		if (statement == null || statement.isClosed()) {
+			if (statement == null && mStatementsCache.size() == MAX_CHACHED_STATEMENTS) {
+				mStatementsCache.remove(mStatementsCache.keySet().iterator().next());
+			}
 
-		if (rc != SQLITE_OK || stmt == 0) {
-			throw new SQLiteException(rc, lastErrorMessage(mDB), sql);
+			int[] prepareCode = new int[1];
+			int rc;
+
+			long stmt = prepare(mDB, sql, prepareCode);
+			rc = prepareCode[0];
+
+			if (rc != SQLITE_OK || stmt == 0) {
+				throw new SQLiteException(rc, lastErrorMessage(mDB), sql);
+			}
+
+			statement = new Statement(stmt);
+			mStatementsCache.put(sql, statement);
 		}
 
-		return new Statement(stmt);
+		return statement;
 	}
 
 	public void execute(String sql) throws SQLiteException {
