@@ -59,4 +59,5 @@ tasks.withType(Test) {
 
 dependencies {
     testCompile 'junit:junit:4.12'
+    compile 'com.flipstudio.collections:collections:1.0.3'
 }
