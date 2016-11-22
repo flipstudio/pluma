@@ -25,7 +25,7 @@ public final class Database {
 	private DatabaseListener mDatabaseListener;
 	private int mTransactionCount;
 	private Array<Action0> mPendingActions;
-	private final HashMap<String, StatementCache> mStatementCache;
+	private final HashMap<String, StatementCache> mStatementsCaches;
 	//endregion
 
 	//region Static
@@ -39,7 +39,7 @@ public final class Database {
 		mPath = path;
 		mTempDir = new File(path).getParent();
 		mPendingActions = new Array<>();
-		mStatementCache = new HashMap<>();
+		mStatementsCaches = new HashMap<>();
 	}
 	//endregion
 
@@ -104,10 +104,10 @@ public final class Database {
 	}
 
 	public StatementCache getCachedStatement(String name) {
-		StatementCache statementCache = mStatementCache.get(name);
+		StatementCache statementCache = mStatementsCaches.get(name);
 		if (statementCache == null) {
 			statementCache = new StatementCache(this);
-			mStatementCache.put(name, statementCache);
+			mStatementsCaches.put(name, statementCache);
 		}
 
 		return statementCache;
