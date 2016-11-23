@@ -3,6 +3,7 @@ package com.flipstudio.pluma;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.Map;
 import java.util.TreeMap;
 
 import static com.flipstudio.pluma.Pluma.SQLITE_BLOB;
@@ -95,6 +96,24 @@ public final class Statement {
 
 	public int bind(int index, String value) {
 		return bind(mStmt, index, value);
+	}
+
+	public int bind(Map<String, Object> arguments) {
+		String parameterName;
+		int parameterIndex;
+
+		int rc = SQLITE_OK;
+		if (arguments != null) {
+			for (String key : arguments.keySet()) {
+				parameterName = ":" + key;
+
+				if ((parameterIndex = getParameterIndex(parameterName)) > 0) {
+					rc = bindObject(parameterIndex, arguments.get(key));
+				}
+			}
+		}
+
+		return rc;
 	}
 
 	public int bind(Object[] arguments) {

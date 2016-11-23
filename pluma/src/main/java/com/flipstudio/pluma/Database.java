@@ -307,9 +307,7 @@ public final class Database {
 
 	//region Private
 	private boolean executeUpdate(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-		Statement statement = compileStatement(sql, listArgs, mapArgs);
-
-		return executeUpdate(statement);
+		return executeUpdate(compileStatement(sql, listArgs, mapArgs));
 	}
 
 	private ResultSet executeQuery(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
