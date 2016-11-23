@@ -24,14 +24,20 @@ public final class Statement {
 	private final int mColumnCount;
 	private final TreeMap<String, Integer> mColumnNameIndexes;
 	private long mStmt;
+	private Database.DatabaseListener mDatabaseListener;
 	//endregion
 
 	//region Constructors
 	Statement(long stmt) {
+		this(stmt, null);
+	}
+
+	Statement(long stmt, Database.DatabaseListener databaseListener) {
 		mStmt = stmt;
 		mColumnCount = getColumnCount(stmt);
+		mDatabaseListener = databaseListener;
 
-		mColumnNameIndexes = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
+		mColumnNameIndexes = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 		for (int i = 0; i < mColumnCount; i++) {
 			mColumnNameIndexes.put(getColumnName(mStmt, i), i);
@@ -69,6 +75,8 @@ public final class Statement {
 	private native int getColumnCount(long stmt);
 
 	private native int step(long stmt);
+
+	private native boolean isBuzy(long stmt);
 
 	private native int finalize(long stmt);
 
@@ -223,7 +231,13 @@ public final class Statement {
 	//endregion
 
 	public int step() {
+		if (!isBusy() && mDatabaseListener != null) mDatabaseListener.onExecuteQuery(getSQL());
+
 		return step(mStmt);
+	}
+
+	public boolean isBusy() {
+		return isBuzy(mStmt);
 	}
 
 	public int clearBindings() {

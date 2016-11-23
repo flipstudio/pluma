@@ -100,7 +100,7 @@ public final class Database {
 			throw new SQLiteException(rc, lastErrorMessage(mDB), sql);
 		}
 
-		return new Statement(stmt);
+		return new Statement(stmt, mDatabaseListener);
 	}
 
 	public StatementCache getCachedStatement(String name) {
@@ -122,7 +122,9 @@ public final class Database {
 			throw new SQLiteException(rc, errors[0], sql);
 		}
 
-		notifyListenerOnExecuteQuery(sql);
+		if (mDatabaseListener != null) {
+			mDatabaseListener.onExecuteQuery(sql);
+		}
 	}
 
 	public void execute(String sql, DatabaseIteractionListener listener) throws SQLiteException {
@@ -184,17 +186,11 @@ public final class Database {
 			throw new SQLiteException(rc, getLastErrorMessage(), query);
 		}
 
-		notifyListenerOnExecuteQuery(query);
-
 		return true;
 	}
 
 	public ResultSet executeQuery(Statement statement) throws SQLiteException {
-		ResultSet rs = new ResultSet(this, statement);
-
-		notifyListenerOnExecuteQuery(statement.getSQL());
-
-		return rs;
+		return new ResultSet(this, statement);
 	}
 	/*
 	Use with native code.
@@ -312,12 +308,6 @@ public final class Database {
 
 	private ResultSet executeQuery(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
 		return executeQuery(compileStatement(query, listArgs, mapArgs));
-	}
-
-	private void notifyListenerOnExecuteQuery(String sql) {
-		if (mDatabaseListener != null) {
-			mDatabaseListener.onExecuteQuery(sql);
-		}
 	}
 
 	private Statement compileStatement(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
