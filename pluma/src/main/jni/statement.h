@@ -53,6 +53,9 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_getColumnCount
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_step
 		(JNIEnv *, jobject, jlong);
 
+JNIEXPORT jboolean JNICALL Java_com_flipstudio_pluma_Statement_isBuzy
+		(JNIEnv *, jobject, jlong);
+
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_clearBindings
 		(JNIEnv *, jobject, jlong);
 

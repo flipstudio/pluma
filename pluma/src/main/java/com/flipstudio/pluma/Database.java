@@ -5,15 +5,11 @@ import com.flipstudio.collections.functions.Action0;
 import com.flipstudio.collections.functions.Func0;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.flipstudio.pluma.Pluma.SQLITE_DONE;
-import static com.flipstudio.pluma.Pluma.SQLITE_MISUSE;
-import static com.flipstudio.pluma.Pluma.SQLITE_OK;
-import static com.flipstudio.pluma.Pluma.SQLITE_OPEN_CREATE;
-import static com.flipstudio.pluma.Pluma.SQLITE_OPEN_FULLMUTEX;
-import static com.flipstudio.pluma.Pluma.SQLITE_OPEN_READWRITE;
+import static com.flipstudio.pluma.Pluma.*;
 import static java.util.Arrays.asList;
 
 /**
@@ -29,6 +25,7 @@ public final class Database {
 	private DatabaseListener mDatabaseListener;
 	private int mTransactionCount;
 	private Array<Action0> mPendingActions;
+	private final HashMap<String, StatementCache> mStatementsCaches;
 	//endregion
 
 	//region Static
@@ -42,6 +39,7 @@ public final class Database {
 		mPath = path;
 		mTempDir = new File(path).getParent();
 		mPendingActions = new Array<>();
+		mStatementsCaches = new HashMap<>();
 	}
 	//endregion
 
@@ -102,7 +100,17 @@ public final class Database {
 			throw new SQLiteException(rc, lastErrorMessage(mDB), sql);
 		}
 
-		return new Statement(stmt);
+		return new Statement(stmt, mDatabaseListener);
+	}
+
+	public StatementCache getCachedStatement(String name) {
+		StatementCache statementCache = mStatementsCaches.get(name);
+		if (statementCache == null) {
+			statementCache = new StatementCache(this);
+			mStatementsCaches.put(name, statementCache);
+		}
+
+		return statementCache;
 	}
 
 	public void execute(String sql) throws SQLiteException {
@@ -114,7 +122,9 @@ public final class Database {
 			throw new SQLiteException(rc, errors[0], sql);
 		}
 
-		notifyListenerOnExecuteQuery(sql);
+		if (mDatabaseListener != null) {
+			mDatabaseListener.onExecuteQuery(sql);
+		}
 	}
 
 	public void execute(String sql, DatabaseIteractionListener listener) throws SQLiteException {
@@ -166,6 +176,22 @@ public final class Database {
 		return lastErrorMessage(mDB);
 	}
 
+	public boolean executeUpdate(Statement statement) throws SQLiteException {
+		int rc = statement.step();
+		String query = statement.getSQL();
+
+		statement.close();
+
+		if (rc != SQLITE_DONE) {
+			throw new SQLiteException(rc, getLastErrorMessage(), query);
+		}
+
+		return true;
+	}
+
+	public ResultSet executeQuery(Statement statement) throws SQLiteException {
+		return new ResultSet(this, statement);
+	}
 	/*
 	Use with native code.
 	sqlite3 *db = reinterpret_cast<sqlite3*>(jdb);
@@ -244,7 +270,7 @@ public final class Database {
 
 			mPendingActions.clear();
 		} catch (SQLiteException e) {
-			throw new RuntimeException(e.toString());
+			e.printStackTrace();
 		}
 	}
 
@@ -277,38 +303,20 @@ public final class Database {
 
 	//region Private
 	private boolean executeUpdate(String sql, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-		Statement statement = compileStatement(sql, listArgs, mapArgs);
-
-		int rc = statement.step();
-
-		statement.close();
-
-		if (rc != SQLITE_DONE) {
-			throw new SQLiteException(rc, getLastErrorMessage(), sql);
-		}
-
-		notifyListenerOnExecuteQuery(sql);
-
-		return true;
+		return executeUpdate(compileStatement(sql, listArgs, mapArgs));
 	}
 
 	private ResultSet executeQuery(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
-		ResultSet rs = new ResultSet(this, compileStatement(query, listArgs, mapArgs));
-
-		notifyListenerOnExecuteQuery(query);
-
-		return rs;
-	}
-
-	private void notifyListenerOnExecuteQuery(String sql) {
-		if (mDatabaseListener != null) {
-			mDatabaseListener.onExecuteQuery(sql);
-		}
+		return executeQuery(compileStatement(query, listArgs, mapArgs));
 	}
 
 	private Statement compileStatement(String query, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
 		Statement statement = prepareStatement(query);
 
+		return compileStatement(statement, listArgs, mapArgs);
+	}
+
+	private Statement compileStatement(Statement statement, List<Object> listArgs, Map<String, Object> mapArgs) throws SQLiteException {
 		int rc, index = 1, bindsCount = statement.getBindParameterCount() + 1;
 
 		if (mapArgs != null && mapArgs.size() > 0) {
@@ -335,7 +343,7 @@ public final class Database {
 				throw new SQLiteException(rc, lastErrorMessage(mDB));
 			}
 
-			throw new SQLiteException(SQLITE_MISUSE, "The bind count is not correct for the number of variables", query);
+			throw new SQLiteException(SQLITE_MISUSE, "The bind count is not correct for the number of variables", statement.getSQL());
 		}
 
 		return statement;

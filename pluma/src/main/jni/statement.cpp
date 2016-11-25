@@ -106,6 +106,12 @@ JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_step
 	return sqlite3_step(stmt);
 }
 
+JNIEXPORT jboolean JNICALL Java_com_flipstudio_pluma_Statement_isBuzy
+		(JNIEnv *jenv, jobject thiz, jlong jstmt) {
+	sqlite3_stmt *stmt = reinterpret_cast<sqlite3_stmt *>(jstmt);
+	return sqlite3_stmt_busy(stmt);
+}
+
 JNIEXPORT jint JNICALL Java_com_flipstudio_pluma_Statement_clearBindings
 		(JNIEnv *jenv, jobject thiz, jlong jstmt) {
 	sqlite3_stmt *stmt = reinterpret_cast<sqlite3_stmt *>(jstmt);

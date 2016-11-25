@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/pluma.iml" filepath="$PROJECT_DIR$/pluma.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pluma.iml" filepath="$PROJECT_DIR$/pluma.iml" />
       <module fileurl="file://$PROJECT_DIR$/pluma/pluma-pluma.iml" filepath="$PROJECT_DIR$/pluma/pluma-pluma.iml" />
     </modules>
   </component>

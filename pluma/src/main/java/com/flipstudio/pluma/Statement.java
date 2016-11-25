@@ -3,6 +3,7 @@ package com.flipstudio.pluma;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.Map;
 import java.util.TreeMap;
 
 import static com.flipstudio.pluma.Pluma.SQLITE_BLOB;
@@ -23,14 +24,20 @@ public final class Statement {
 	private final int mColumnCount;
 	private final TreeMap<String, Integer> mColumnNameIndexes;
 	private long mStmt;
+	private Database.DatabaseListener mDatabaseListener;
 	//endregion
 
 	//region Constructors
 	Statement(long stmt) {
+		this(stmt, null);
+	}
+
+	Statement(long stmt, Database.DatabaseListener databaseListener) {
 		mStmt = stmt;
 		mColumnCount = getColumnCount(stmt);
+		mDatabaseListener = databaseListener;
 
-		mColumnNameIndexes = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
+		mColumnNameIndexes = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 		for (int i = 0; i < mColumnCount; i++) {
 			mColumnNameIndexes.put(getColumnName(mStmt, i), i);
@@ -69,6 +76,8 @@ public final class Statement {
 
 	private native int step(long stmt);
 
+	private native boolean isBuzy(long stmt);
+
 	private native int finalize(long stmt);
 
 	private native int clearBindings(long stmt);
@@ -95,6 +104,24 @@ public final class Statement {
 
 	public int bind(int index, String value) {
 		return bind(mStmt, index, value);
+	}
+
+	public int bind(Map<String, Object> arguments) {
+		String parameterName;
+		int parameterIndex;
+
+		int rc = SQLITE_OK;
+		if (arguments != null) {
+			for (String key : arguments.keySet()) {
+				parameterName = ":" + key;
+
+				if ((parameterIndex = getParameterIndex(parameterName)) > 0) {
+					rc = bindObject(parameterIndex, arguments.get(key));
+				}
+			}
+		}
+
+		return rc;
 	}
 
 	public int bind(Object[] arguments) {
@@ -204,7 +231,13 @@ public final class Statement {
 	//endregion
 
 	public int step() {
+		if (!isBusy() && mDatabaseListener != null) mDatabaseListener.onExecuteQuery(getSQL());
+
 		return step(mStmt);
+	}
+
+	public boolean isBusy() {
+		return isBuzy(mStmt);
 	}
 
 	public int clearBindings() {
