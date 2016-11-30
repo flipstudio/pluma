@@ -1,8 +1,8 @@
 package com.flipstudio.pluma;
 
-import java.util.LinkedHashMap;
+import com.flipstudio.collections.Array;
 
-import static com.flipstudio.pluma.Pluma.SQLITE_OK;
+import java.util.HashMap;
 
 /**
  * Created by Maurício Feijó
@@ -12,7 +12,8 @@ import static com.flipstudio.pluma.Pluma.SQLITE_OK;
 public class StatementCache {
 	//region Fields
 	private static int MAX_CHACHED_STATEMENTS = 15;
-	private final LinkedHashMap<String, Statement> mStatementsCache;
+	private final Array<String> mQueriesCache;
+	private final HashMap<String, Statement> mStatementsCache;
 	final private Database mDatabase;
 	//endregion
 
@@ -21,28 +22,41 @@ public class StatementCache {
 		if (database == null) throw new RuntimeException("Cannot create a StatementCache without a database");
 
 		mDatabase = database;
-		mStatementsCache = new LinkedHashMap<>(MAX_CHACHED_STATEMENTS);
+		mStatementsCache = new HashMap<>(MAX_CHACHED_STATEMENTS);
+		mQueriesCache = new Array<>(MAX_CHACHED_STATEMENTS);
 	}
 	//endregion
 
 	//region Public
 	public Statement getStatement(String query) {
-		Statement statement = mStatementsCache.get(query);
-
-		if (statement == null || statement.isClosed()) {
-			if (statement == null && mStatementsCache.size() == MAX_CHACHED_STATEMENTS) {
-				final String key = mStatementsCache.keySet().iterator().next();
-				mStatementsCache.get(key).close();
-				mStatementsCache.remove(key);
-			}
-
+		Statement statement;
+		synchronized(this) {
 			try {
-				statement = mDatabase.prepareStatement(query);
+				statement = mStatementsCache.get(query);
+
+				if (statement == null) {
+					if (mQueriesCache.size() == MAX_CHACHED_STATEMENTS) {
+						final String key = mQueriesCache.get(0);
+						mStatementsCache.get(key).close();
+						mStatementsCache.remove(key);
+						mQueriesCache.removeAt(0);
+					}
+
+					statement = mDatabase.prepareStatement(query);
+					mStatementsCache.put(query, statement);
+				} else {
+					if (statement.isClosed()) {
+						statement = mDatabase.prepareStatement(query);
+						mStatementsCache.put(query, statement);
+					}
+
+					mQueriesCache.remove(query);
+				}
+
+				mQueriesCache.add(query);
 			} catch (SQLiteException e) {
 				throw new RuntimeException(e);
 			}
-
-			mStatementsCache.put(query, statement);
 		}
 
 		return statement;

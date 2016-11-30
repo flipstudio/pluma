@@ -44,7 +44,7 @@ public class PlumaTests {
 						+ "INSERT INTO people (name,lastName,birth) VALUES ('Reese','Kalia','763347737');");
 
 		mDatabase.setDatabaseListener(new Database.DatabaseListener() {
-			@Override public void onExecuteQuery(String query) {
+			@Override public void onExecuteQuery(long timeExecution, String query) {
 				recordQuery(query);
 			}
 		});
@@ -105,6 +105,8 @@ public class PlumaTests {
 		assertEquals("Unexpected person last name.", "Kalia", people.get(2).get("lastName"));
 		assertEquals("Unexpected person birth.", new Date(763347737000L), people.get(2).get("birth"));
 
+		rs.close();
+
 		rs = mDatabase.executeQuery("SELECT id, name FROM people WHERE id = ?", 2);
 		assertEquals("Unexpected column count.", 2, rs.getColumnCount());
 		if (rs.next()) {
@@ -112,9 +114,10 @@ public class PlumaTests {
 			assertEquals("Unexpected id.", 2, rs.getBigInteger(0).intValue());
 		}
 
-		Map<String, Object> args = new TreeMap<String, Object>();
+		Map<String, Object> args = new TreeMap<>();
 		args.put("FirstName", "Damon");
 
+		rs.close();
 		rs = mDatabase.executeQuery("SELECT id FROM people WHERE name = :FirstName", args);
 		if (rs.next()) {
 			assertEquals("Unexpected id.", 2, rs.getInt(0));
@@ -124,6 +127,7 @@ public class PlumaTests {
 				"SELECT id, name, lastName, birth FROM people",
 				"SELECT id, name FROM people WHERE id = ?",
 				"SELECT id FROM people WHERE name = :FirstName");
+		rs.close();
 	}
 	//endregion
 
