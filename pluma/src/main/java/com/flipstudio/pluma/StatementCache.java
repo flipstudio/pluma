@@ -11,7 +11,7 @@ import java.util.HashMap;
  */
 public class StatementCache {
 	//region Fields
-	private static int MAX_CHACHED_STATEMENTS = 15;
+	private static int MAX_CACHED_STATEMENTS = 15;
 	private final Array<String> mQueriesCache;
 	private final HashMap<String, Statement> mStatementsCache;
 	final private Database mDatabase;
@@ -22,8 +22,8 @@ public class StatementCache {
 		if (database == null) throw new RuntimeException("Cannot create a StatementCache without a database");
 
 		mDatabase = database;
-		mStatementsCache = new HashMap<>(MAX_CHACHED_STATEMENTS);
-		mQueriesCache = new Array<>(MAX_CHACHED_STATEMENTS);
+		mStatementsCache = new HashMap<>(MAX_CACHED_STATEMENTS);
+		mQueriesCache = new Array<>(MAX_CACHED_STATEMENTS);
 	}
 	//endregion
 
@@ -35,7 +35,7 @@ public class StatementCache {
 				statement = mStatementsCache.get(query);
 
 				if (statement == null) {
-					if (mQueriesCache.size() == MAX_CHACHED_STATEMENTS) {
+					if (mQueriesCache.size() == MAX_CACHED_STATEMENTS) {
 						final String key = mQueriesCache.get(0);
 						mStatementsCache.get(key).close();
 						mStatementsCache.remove(key);

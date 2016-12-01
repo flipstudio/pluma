@@ -231,8 +231,10 @@ public final class Statement {
 	//endregion
 
 	public int step() {
-		final long start = System.currentTimeMillis();
-		final boolean canInvokeListener = !isBusy() && mDatabaseListener != null;
+		final boolean canInvokeListener = mDatabaseListener != null && !isBusy();
+
+		long start = 0;
+		if (canInvokeListener) start = System.currentTimeMillis();
 
 		int result = step(mStmt);
 
