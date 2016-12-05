@@ -114,6 +114,7 @@ public final class Database {
 	}
 
 	public void execute(String sql) throws SQLiteException {
+		final long start = System.currentTimeMillis();
 		String[] errors = new String[1];
 
 		int rc = exec(mDB, sql, errors);
@@ -123,7 +124,7 @@ public final class Database {
 		}
 
 		if (mDatabaseListener != null) {
-			mDatabaseListener.onExecuteQuery(sql);
+			mDatabaseListener.onExecuteQuery(System.currentTimeMillis() - start, sql);
 		}
 	}
 
@@ -365,7 +366,7 @@ public final class Database {
 	//endregion
 
 	public interface DatabaseListener {
-		void onExecuteQuery(String query);
+		void onExecuteQuery(long timeExecution, String query);
 	}
 
 	public interface DatabaseIteractionListener {

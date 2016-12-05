@@ -231,9 +231,16 @@ public final class Statement {
 	//endregion
 
 	public int step() {
-		if (!isBusy() && mDatabaseListener != null) mDatabaseListener.onExecuteQuery(getSQL());
+		final boolean canInvokeListener = mDatabaseListener != null && !isBusy();
 
-		return step(mStmt);
+		long start = 0;
+		if (canInvokeListener) start = System.currentTimeMillis();
+
+		int result = step(mStmt);
+
+		if (canInvokeListener) mDatabaseListener.onExecuteQuery(System.currentTimeMillis() - start, getSQL());
+
+		return result;
 	}
 
 	public boolean isBusy() {
