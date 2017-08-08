@@ -5,7 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(CMAKE_BUILD_TYPE Release)
 
-set(SQLITE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../SQLite)
+set(SQLITE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../c-sqlite)
 
 set(JNI_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/main/jni)
 

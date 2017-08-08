@@ -1,7 +1,9 @@
 package com.flipstudio.pluma;
 
+import android.util.AndroidRuntimeException;
 import com.flipstudio.collections.Array;
 import com.flipstudio.collections.functions.Action0;
+import com.flipstudio.collections.functions.Action1;
 import com.flipstudio.collections.functions.Func0;
 
 import java.io.File;
@@ -24,7 +26,7 @@ public final class Database {
 	private long mDB;
 	private DatabaseListener mDatabaseListener;
 	private int mTransactionCount;
-	private Array<Action0> mPendingActions;
+	private Array<Action1<TransactionStatus>> mPendingActions;
 	private final HashMap<String, StatementCache> mStatementsCaches;
 	//endregion
 
@@ -230,9 +232,9 @@ public final class Database {
 		}
 	}
 
-	public void executeAfterCommit(Action0 action) {
+	public void executeAfterFinishTransaction(Action1<TransactionStatus> action) {
 		if (!isInTransaction()) {
-			action.call();
+			action.call(TransactionStatus.NONE);
 		} else {
 			mPendingActions.add(action);
 		}
@@ -256,8 +258,8 @@ public final class Database {
 		}
 
 		if (!isInTransaction()) {
-			for (final Action0 action : mPendingActions) {
-				action.call();
+			for (final Action1<TransactionStatus> action : mPendingActions) {
+				action.call(TransactionStatus.COMMIT);
 			}
 
 			mPendingActions.clear();
@@ -269,7 +271,13 @@ public final class Database {
 			executeUpdate("ROLLBACK");
 			mTransactionCount--;
 
-			mPendingActions.clear();
+			if (!isInTransaction()) {
+				for (final Action1<TransactionStatus> action : mPendingActions) {
+					action.call(TransactionStatus.ROLLBACK);
+				}
+
+				mPendingActions.clear();
+			}
 		} catch (SQLiteException e) {
 			e.printStackTrace();
 		}
@@ -362,6 +370,28 @@ public final class Database {
 
 	public boolean isInTransaction() {
 		return mTransactionCount > 0;
+	}
+	//endregion
+
+	//region Enums
+	public enum TransactionStatus {
+		NONE(0), COMMIT(100), ROLLBACK(200);
+		public final int value;
+
+		TransactionStatus(int value) {
+			this.value = value;
+		}
+
+		public static TransactionStatus valueFrom(int value) {
+			TransactionStatus[] kinds = values();
+			for (TransactionStatus status : kinds) {
+				if (status.value == value) {
+					return status;
+				}
+			}
+
+			throw new AndroidRuntimeException("Couldn't find transactionStatus for value " + value);
+		}
 	}
 	//endregion
 
