@@ -55,6 +55,7 @@ public final class Pluma {
 	public static final int SQLITE_OPEN_READONLY = 0x00000001;  /* Ok for sqlite3_open_v2() */
 	public static final int SQLITE_OPEN_READWRITE = 0x00000002;  /* Ok for sqlite3_open_v2() */
 	public static final int SQLITE_OPEN_CREATE = 0x00000004;  /* Ok for sqlite3_open_v2() */
+	public static final int SQLITE_OPEN_SHAREDCACHE = 0x00020000;  /* Ok for sqlite3_open_v2() */
 	public static final int SQLITE_OPEN_FULLMUTEX = 0x00010000;  /* Ok for sqlite3_open_v2() */
 	//endregion
 	//endregion
